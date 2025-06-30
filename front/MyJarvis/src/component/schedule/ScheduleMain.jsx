@@ -13,7 +13,7 @@ import ContractList from './ContractList';
 import DailyWorkList from './DailyWorkList';
 import MySchedule from './MySchedule';
 import WorkRemind from './WorkRemind';
-import './Schedule.css';
+import './ScheduleMain.css';
 
 // 일정/작업 관리 메인: 계약 연도 일정, To-do, 리마인더 등 탭 연결
 function ScheduleMain() {
@@ -21,7 +21,7 @@ function ScheduleMain() {
   return (
     <div className="schedule-main">
       <h2>일정/작업 관리</h2>
-      <div className="button-row" style={{ marginBottom: 16 }}>
+      <div className="button-row">
         <button onClick={() => setTab('contract')}>계약별 일정</button>
         <button onClick={() => setTab('todo')}>오늘 할 일</button>
         <button onClick={() => setTab('myschedule')}>내 일정</button>

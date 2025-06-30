@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import './MeetingInsert.css';
 
 /*
   수동 작성, 회의 파일 업로드
@@ -13,7 +14,7 @@ import React, { useState } from 'react';
 */
 
 // 회의록 등록/수정, 파일 업로드 폼
-function MeetingInsert() {
+function MeetingInsert({ setMeetings, setTab }) {
   const [title, setTitle] = useState('');
   const [date, setDate] = useState('');
   const [content, setContent] = useState('');
@@ -22,17 +23,36 @@ function MeetingInsert() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    alert('회의록이 등록되었습니다! (실제 저장 로직 필요)');
+    // 새 회의록 추가
+    setMeetings(prev => [
+      ...prev,
+      {
+        id: Date.now(),
+        title,
+        date,
+        content,
+        tags: [],
+        participants,
+        file,
+      },
+    ]);
+    setTitle('');
+    setDate('');
+    setContent('');
+    setParticipants('');
+    setFile(null);
+    alert('회의록이 등록되었습니다!');
+    if (setTab) setTab('list'); // 등록 후 목록 탭으로 자동 전환
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ maxWidth: 400 }}>
+    <form onSubmit={handleSubmit} className="meeting-insert-form">
       <h3>회의록 등록</h3>
-      <input placeholder="회의 제목" value={title} onChange={e => setTitle(e.target.value)} required /><br />
-      <input type="date" value={date} onChange={e => setDate(e.target.value)} required /><br />
-      <textarea placeholder="회의 내용" value={content} onChange={e => setContent(e.target.value)} rows={4} required /><br />
-      <input placeholder="참여자(,로 구분)" value={participants} onChange={e => setParticipants(e.target.value)} /><br />
-      <input type="file" onChange={e => setFile(e.target.files[0])} /><br />
+      <input placeholder="회의 제목" value={title} onChange={e => setTitle(e.target.value)} required />
+      <input type="date" value={date} onChange={e => setDate(e.target.value)} required />
+      <textarea placeholder="회의 내용" value={content} onChange={e => setContent(e.target.value)} rows={4} required />
+      <input placeholder="참여자(,로 구분)" value={participants} onChange={e => setParticipants(e.target.value)} />
+      <input type="file" onChange={e => setFile(e.target.files[0])} />
       {file && <div>업로드 파일: {file.name}</div>}
       <button type="submit">등록</button>
     </form>

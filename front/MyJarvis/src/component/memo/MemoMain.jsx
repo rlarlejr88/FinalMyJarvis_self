@@ -11,6 +11,7 @@
 import React, { useState } from 'react';
 import MemoFixed from './MemoFixed';
 import MemoSearch from './MemoSearch';
+import './MemoMain.css';
 
 // 샘플 메모 데이터
 const sampleMemos = [
@@ -44,71 +45,56 @@ function MemoMain() {
   };
 
   return (
-    <div>
+    <div className="memo-main">
       <h2>메모/포스트잇</h2>
-      <div style={{ display: 'flex', gap: 8, marginBottom: 16, justifyContent: 'center' }}>
+      <div className="memo-tab-row">
         <button onClick={() => setTab('recent')}>최근 메모</button>
         <button onClick={() => setTab('fixed')}>고정 메모</button>
         <button onClick={() => setTab('search')}>메모 검색</button>
       </div>
       {tab === 'recent' && (
-        <div style={{ maxWidth: 500, margin: '0 auto' }}>
+        <div>
           <h4>최근 메모</h4>
-          <ul style={{ padding: 0, listStyle: 'none' }}>
+          <ul className="memo-list">
             {memos.map(m => (
-              <li key={m.id} style={{ background: '#f8fafc', borderRadius: 8, marginBottom: 10, padding: 12, boxShadow: '0 1px 4px #e0e7ef33', cursor: 'pointer', position: 'relative' }} onClick={() => setSelectedMemo(m)}>
+              <li key={m.id} className={`memo-list-item${selectedMemo && selectedMemo.id === m.id ? ' selected' : ''}`} onClick={() => setSelectedMemo(m)}>
                 <b>{m.title}</b> <span style={{ color: '#888', fontSize: '0.95em' }}>({m.date})</span><br />
                 <span>{m.content}</span>
-                {m.fixed && <span style={{ color: '#f59e42', marginLeft: 8 }}>[고정]</span>}
-                <button
-                  onClick={e => { e.stopPropagation(); handleDelete(m.id); }}
-                  style={{ position: 'absolute', top: 8, right: 12, background: 'none', border: 'none', color: '#e11d48', fontSize: 18, cursor: 'pointer' }}
-                  title="삭제"
-                >
-                  ×
-                </button>
               </li>
             ))}
           </ul>
           {selectedMemo && (
-            <div style={{ position: 'fixed', left: 0, top: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setSelectedMemo(null)}>
-              <div style={{ background: '#fff', borderRadius: 12, padding: 32, minWidth: 320, maxWidth: 400, boxShadow: '0 2px 16px #0002', position: 'relative' }} onClick={e => e.stopPropagation()}>
-                <button onClick={() => setSelectedMemo(null)} style={{ position: 'absolute', top: 12, right: 16, background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#888' }}>&times;</button>
-                <h3 style={{ marginTop: 0 }}>{selectedMemo.title}</h3>
-                <div style={{ color: '#888', fontSize: '0.95em', marginBottom: 8 }}>{selectedMemo.date}</div>
-                <div style={{ marginBottom: 12 }}>{selectedMemo.content}</div>
-                {selectedMemo.fixed && <div style={{ color: '#f59e42', fontWeight: 600 }}>[고정 메모]</div>}
+            <div className="memo-detail-overlay" onClick={() => setSelectedMemo(null)}>
+              <div className="memo-detail" onClick={e => e.stopPropagation()}>
+                <button className="memo-detail-close" onClick={() => setSelectedMemo(null)}>&times;</button>
+                <h3 className="memo-detail-title">{selectedMemo.title}</h3>
+                <div className="memo-detail-date">{selectedMemo.date}</div>
+                <div className="memo-detail-content">{selectedMemo.content}</div>
+                {selectedMemo.fixed && <div className="memo-detail-fixed">[고정 메모]</div>}
               </div>
             </div>
           )}
         </div>
       )}
       {tab === 'fixed' && (
-        <div style={{ maxWidth: 500, margin: '0 auto' }}>
+        <div>
           <h4>고정 메모</h4>
-          <ul style={{ padding: 0, listStyle: 'none' }}>
+          <ul className="memo-list">
             {memos.filter(m => m.fixed).map(m => (
-              <li key={m.id} style={{ background: '#fffbe6', borderRadius: 8, marginBottom: 10, padding: 12, boxShadow: '0 1px 4px #ffe06655', position: 'relative', cursor: 'pointer' }} onClick={() => setSelectedMemo(m)}>
+              <li key={m.id} className="memo-list-item" onClick={() => setSelectedMemo(m)}>
                 <b>{m.title}</b> <span style={{ color: '#888', fontSize: '0.95em' }}>({m.date})</span><br />
                 <span>{m.content}</span>
-                <button
-                  onClick={e => { e.stopPropagation(); handleDelete(m.id); }}
-                  style={{ position: 'absolute', top: 8, right: 12, background: 'none', border: 'none', color: '#e11d48', fontSize: 18, cursor: 'pointer' }}
-                  title="삭제"
-                >
-                  ×
-                </button>
               </li>
             ))}
           </ul>
           {selectedMemo && (
-            <div style={{ position: 'fixed', left: 0, top: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setSelectedMemo(null)}>
-              <div style={{ background: '#fff', borderRadius: 12, padding: 32, minWidth: 320, maxWidth: 400, boxShadow: '0 2px 16px #0002', position: 'relative' }} onClick={e => e.stopPropagation()}>
-                <button onClick={() => setSelectedMemo(null)} style={{ position: 'absolute', top: 12, right: 16, background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#888' }}>&times;</button>
-                <h3 style={{ marginTop: 0 }}>{selectedMemo.title}</h3>
-                <div style={{ color: '#888', fontSize: '0.95em', marginBottom: 8 }}>{selectedMemo.date}</div>
-                <div style={{ marginBottom: 12 }}>{selectedMemo.content}</div>
-                {selectedMemo.fixed && <div style={{ color: '#f59e42', fontWeight: 600 }}>[고정 메모]</div>}
+            <div className="memo-detail-overlay" onClick={() => setSelectedMemo(null)}>
+              <div className="memo-detail" onClick={e => e.stopPropagation()}>
+                <button className="memo-detail-close" onClick={() => setSelectedMemo(null)}>&times;</button>
+                <h3 className="memo-detail-title">{selectedMemo.title}</h3>
+                <div className="memo-detail-date">{selectedMemo.date}</div>
+                <div className="memo-detail-content">{selectedMemo.content}</div>
+                {selectedMemo.fixed && <div className="memo-detail-fixed">[고정 메모]</div>}
               </div>
             </div>
           )}

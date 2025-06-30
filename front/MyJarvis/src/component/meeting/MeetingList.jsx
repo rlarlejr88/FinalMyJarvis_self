@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import SumAndMakeTag from './SumAndMakeTag';
+import './MeetingList.css';
 
 /*
   태그 기반 필터, 고객사별 보기
@@ -19,102 +20,57 @@ const initialMeetings = [
   { id: 2, title: '기획 회의', date: '2025-06-21', tags: ['기획'], content: '신규 프로젝트 기획 및 역할 분담.' },
 ];
 
-function MeetingList() {
-  const [meetings, setMeetings] = useState(initialMeetings);
+function MeetingList({ meetings, setMeetings, setTab, setSelectedTag }) {
   const [selected, setSelected] = useState(null);
-  const [showGpt, setShowGpt] = useState(false);
-  const [editMode, setEditMode] = useState(false);
-  const [editData, setEditData] = useState({ title: '', date: '', tags: '', content: '' });
+
+  const handleTagClick = (tag) => {
+    if (setSelectedTag && setTab) {
+      setSelectedTag(tag);
+      setTab('tag');
+    }
+  };
+
+  const handleSaveTags = (meetingId, newTags) => {
+    setMeetings(prev => prev.map(m => m.id === meetingId ? { ...m, tags: Array.from(new Set([...(m.tags || []), ...newTags])) } : m));
+    // 태그 저장 후 바로 상세에 반영됨
+  };
 
   const filtered = meetings;
-  // const filtered = meetings.filter(m => filter ? m.tags.includes(filter) : true);
-
-  const handleEdit = () => {
-    setEditData({
-      title: selected.title,
-      date: selected.date,
-      tags: selected.tags.join(', '),
-      content: selected.content,
-    });
-    setEditMode(true);
-  };
-
-  const handleEditSave = () => {
-    setMeetings(meetings.map(m =>
-      m.id === selected.id ? {
-        ...m,
-        title: editData.title,
-        date: editData.date,
-        tags: editData.tags.split(',').map(t => t.trim()),
-        content: editData.content,
-      } : m
-    ));
-    setSelected({
-      ...selected,
-      title: editData.title,
-      date: editData.date,
-      tags: editData.tags.split(',').map(t => t.trim()),
-      content: editData.content,
-    });
-    setEditMode(false);
-  };
-
   return (
     <div>
       <h3>회의록 목록</h3>
-      {/* 버튼 그룹 완전 제거 */}
-      <ul>
+      <ul className="meeting-list">
         {filtered.map(m => (
-          <li key={m.id} style={{ display: 'flex', alignItems: 'center' }}>
-            {/* deleteMode 체크박스 완전 제거 */}
-            <span style={{ flex: 1, cursor: 'pointer', fontWeight: selected && selected.id === m.id ? 'bold' : 'normal' }} onClick={() => { setSelected(m); setShowGpt(false); setEditMode(false); }}>
-              {m.title} ({m.date}) - 태그: {m.tags.join(', ')}
+          <li
+            key={m.id}
+            className={`meeting-list-item${selected && selected.id === m.id ? ' selected' : ''}`}
+            onClick={() => setSelected(m)}
+          >
+            <b>{m.title}</b> <span style={{ color: '#888', fontSize: '0.95em' }}>({m.date})</span><br />
+            <span>
+              태그: {m.tags && m.tags.length > 0 ? m.tags.map((tag, idx) => (
+                <span key={tag} className="meeting-tag" onClick={e => { e.stopPropagation(); handleTagClick(tag); }}>
+                  {tag}{idx < m.tags.length - 1 ? ', ' : ''}
+                </span>
+              )) : '없음'}
             </span>
+            {selected && selected.id === m.id && (
+              <div className="meeting-detail">
+                <div className="meeting-detail-section">
+                  <b>회의 내용:</b>
+                  <div>{selected.content}</div>
+                </div>
+                <div className="meeting-detail-section">
+                  <SumAndMakeTag
+                    initialContent={selected.content}
+                    onSaveTags={tags => handleSaveTags(selected.id, tags)}
+                  />
+                </div>
+              </div>
+            )}
           </li>
         ))}
       </ul>
-      {selected && (
-        <div className="meeting-detail" style={{ display: 'flex', flexDirection: 'row', gap: '2.5rem', alignItems: 'flex-start', width: '100%' }}>
-          <div style={{ flex: 2, minWidth: 320, maxWidth: 700 }}>
-            <h4>회의 내용</h4>
-            {editMode ? (
-              <div className="meeting-edit-form">
-                <div><b>제목:</b> <input value={editData.title} onChange={e => setEditData({ ...editData, title: e.target.value })} /></div>
-                <div><b>일자:</b> <input type="date" value={editData.date} onChange={e => setEditData({ ...editData, date: e.target.value })} /></div>
-                <div><b>태그:</b> <input value={editData.tags} onChange={e => setEditData({ ...editData, tags: e.target.value })} placeholder=",로 구분" /></div>
-                <div style={{ marginTop: 8 }}><textarea value={editData.content} onChange={e => setEditData({ ...editData, content: e.target.value })} rows={3} style={{ width: '100%' }} /></div>
-                <button onClick={handleEditSave} style={{ marginTop: 8 }}>저장</button>
-                <button onClick={() => setEditMode(false)} style={{ marginLeft: 8 }}>취소</button>
-              </div>
-            ) : (
-              <>
-                <div><b>제목:</b> {selected.title}</div>
-                <div><b>일자:</b> {selected.date}</div>
-                <div><b>태그:</b> {selected.tags.join(', ')}</div>
-                <div style={{ marginTop: 8 }}>{selected.content}</div>
-                <button style={{ marginTop: 16 }} onClick={handleEdit}>수정</button>
-                <button style={{ marginTop: 16, marginLeft: 8 }} onClick={() => setShowGpt(!showGpt)}>
-                  {showGpt ? '요약/태그 닫기' : 'GPT 요약/태그'}
-                </button>
-                {/* 상세보기 내 삭제 버튼 */}
-                <button style={{ marginTop: 16, marginLeft: 8, background: '#e11d48', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 24px', fontWeight: 600, fontSize: '1rem', cursor: 'pointer' }}
-                  onClick={() => {
-                    setMeetings(meetings.filter(m => m.id !== selected.id));
-                    setSelected(null);
-                    setShowGpt(false);
-                    setEditMode(false);
-                  }}
-                >삭제</button>
-              </>
-            )}
-          </div>
-          {showGpt && (
-            <div style={{ flex: 3, minWidth: 400, maxWidth: 900 }}>
-              <SumAndMakeTag initialContent={selected.content} />
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 }

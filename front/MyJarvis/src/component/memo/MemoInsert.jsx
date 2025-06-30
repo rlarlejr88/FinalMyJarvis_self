@@ -9,6 +9,7 @@
  */
 
 import React, { useState } from 'react';
+import './MemoInsert.css';
 
 // 메모 등록, 페이지별/연동 메모 구분 샘플
 function MemoInsert() {
@@ -20,16 +21,14 @@ function MemoInsert() {
     setText('');
   };
   return (
-    <form onSubmit={handleSubmit} style={{ maxWidth: 400 }}>
+    <form onSubmit={handleSubmit} className="memo-insert-form">
       <h3>메모 등록</h3>
       <textarea value={text} onChange={e => setText(e.target.value)} placeholder="메모 내용" rows={3} required />
-      <br />
       <select value={type} onChange={e => setType(e.target.value)}>
         <option value="일반">일반 메모</option>
         <option value="페이지별">페이지별 메모</option>
         <option value="연동">연동 메모</option>
       </select>
-      <br />
       <button type="submit">등록</button>
     </form>
   );

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import './DailyWorkList.css';
 
 /*
   오늘 할 일, 완료/미완료 분류
@@ -47,7 +48,7 @@ function DailyWorkList() {
   return (
     <div>
       <h3>오늘 할 일</h3>
-      <div className="button-row" style={{ marginBottom: 12 }}>
+      <div className="button-row">
         <input value={input} onChange={e => setInput(e.target.value)} placeholder="할 일 입력" />
         <select value={priority} onChange={e => setPriority(e.target.value)}>
           <option>Low</option><option>Medium</option><option>High</option>
@@ -64,12 +65,12 @@ function DailyWorkList() {
       </div>
       <ul>
         {todos.map(t => (
-          <li key={t.id} style={{ textDecoration: t.done ? 'line-through' : 'none', display: 'flex', alignItems: 'center' }}>
+          <li key={t.id} className="dailywork-listitem" style={t.done ? { textDecoration: 'line-through' } : {}}>
             {deleteMode && (
-              <input type="checkbox" checked={checked.includes(t.id)} onChange={() => handleCheck(t.id)} style={{ marginRight: 8 }} />
+              <input type="checkbox" checked={checked.includes(t.id)} onChange={() => handleCheck(t.id)} className="dailywork-checkbox" />
             )}
-            <span style={{ flex: 1 }}>
-              <input type="checkbox" checked={t.done} onChange={() => toggleDone(t.id)} disabled={deleteMode} style={{ marginRight: 8 }} />
+            <span className="dailywork-span">
+              <input type="checkbox" checked={t.done} onChange={() => toggleDone(t.id)} disabled={deleteMode} className="dailywork-checkbox" />
               {t.text} ({t.priority})
             </span>
           </li>

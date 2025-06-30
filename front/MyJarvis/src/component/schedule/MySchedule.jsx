@@ -17,31 +17,16 @@ const dummySchedules = [
 ];
 
 function MySchedule() {
-  const [view, setView] = useState('월간');
   const [selected, setSelected] = useState(null);
-  const [deleteMode, setDeleteMode] = useState(false);
-  const [checked, setChecked] = useState([]);
   const [schedules, setSchedules] = useState(dummySchedules);
   const [editMode, setEditMode] = useState(false);
   const [editData, setEditData] = useState({ title: '', date: '', status: '', desc: '' });
   // view에 따라 일정 필터링(샘플)
-  const filtered = schedules.filter(s => {
-    if (view === '일간') return s.date === '2025-06-28';
-    if (view === '주간') return true; // 실제 주간 필터는 추후 구현
-    return true;
-  });
-  const handleCheck = (id) => {
-    setChecked(checked.includes(id) ? checked.filter(cid => cid !== id) : [...checked, id]);
-  };
-  const handleDelete = () => {
-    setSchedules(schedules.filter(s => !checked.includes(s.id)));
-    setChecked([]);
-    setDeleteMode(false);
+  const filtered = schedules;
+
+  const handleDelete = (id) => {
+    setSchedules(schedules.filter(s => s.id !== id));
     setSelected(null);
-  };
-  const handleCancel = () => {
-    setChecked([]);
-    setDeleteMode(false);
   };
   const handleEditClick = (s) => {
     setSelected(s);
@@ -64,25 +49,9 @@ function MySchedule() {
   return (
     <div>
       <h3>내 일정</h3>
-      <div className="button-row" style={{ marginBottom: 12 }}>
-        <button onClick={() => setView('일간')}>일간</button>
-        <button onClick={() => setView('주간')}>주간</button>
-        <button onClick={() => setView('월간')}>월간</button>
-        {deleteMode ? (
-          <>
-            <button onClick={handleDelete} disabled={checked.length === 0}>선택 삭제</button>
-            <button onClick={handleCancel}>취소</button>
-          </>
-        ) : (
-          <button onClick={() => setDeleteMode(true)}>삭제</button>
-        )}
-      </div>
       <ul>
         {filtered.map(s => (
           <li key={s.id} style={{ cursor: 'pointer', fontWeight: selected && selected.id === s.id ? 'bold' : 'normal', display: 'flex', alignItems: 'center' }}>
-            {deleteMode && (
-              <input type="checkbox" checked={checked.includes(s.id)} onChange={() => handleCheck(s.id)} style={{ marginRight: 8 }} />
-            )}
             <span
               style={{ flex: 1, display: selected && selected.id === s.id && !editMode ? 'none' : 'block' }}
               onClick={() => { setSelected(s); setEditMode(false); }}
@@ -111,8 +80,15 @@ function MySchedule() {
                     <div><b>상태:</b> <span style={{ color: selected.status === '완료' ? '#228be6' : '#fab005', fontWeight: 500 }}>{selected.status}</span></div>
                     <div style={{ marginTop: 8 }}><b>설명:</b> <span style={{ color: '#444' }}>{selected.desc}</span></div>
                   </div>
+                  <div style={{ display: 'flex', flexDirection: 'row', gap: 12, marginLeft: 18 }}>
+                    <button style={{ background: '#fff', color: '#2563eb', border: '1px solid #2563eb', borderRadius: 8, padding: '8px 24px', fontWeight: 500, fontSize: '1rem', cursor: 'pointer' }}
+                      onClick={() => { setEditData({ title: selected.title, date: selected.date, status: selected.status, desc: selected.desc }); setEditMode(true); }}
+                    >수정</button>
+                    <button style={{ background: '#e11d48', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 24px', fontWeight: 600, fontSize: '1rem', cursor: 'pointer' }}
+                      onClick={() => handleDelete(selected.id)}
+                    >삭제</button>
+                  </div>
                 </div>
-                <button style={{ marginLeft: 12 }} onClick={() => { setEditData({ title: selected.title, date: selected.date, status: selected.status, desc: selected.desc }); setEditMode(true); }}>수정</button>
               </>
             )}
             {selected && selected.id === s.id && editMode && (

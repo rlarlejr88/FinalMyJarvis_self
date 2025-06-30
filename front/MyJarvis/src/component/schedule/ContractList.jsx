@@ -16,26 +16,14 @@ const initialContracts = [
 ];
 
 function ContractList() {
-  const [status, setStatus] = useState('');
   const [contracts, setContracts] = useState(initialContracts);
   const [selected, setSelected] = useState(null);
-  const [checked, setChecked] = useState([]);
-  const [deleteMode, setDeleteMode] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editData, setEditData] = useState({ name: '', date: '', status: '', desc: '' });
 
-  const filtered = contracts.filter(c =>
-    status ? c.status === status : true
-  );
-
-  const handleCheck = (id) => {
-    setChecked(prev => prev.includes(id) ? prev.filter(cid => cid !== id) : [...prev, id]);
-  };
-  const handleDelete = () => {
-    setContracts(contracts.filter(c => !checked.includes(c.id)));
-    setChecked([]);
+  const handleDelete = (id) => {
+    setContracts(contracts.filter(c => c.id !== id));
     setSelected(null);
-    setDeleteMode(false);
   };
 
   const handleEditChange = (e) => {
@@ -55,25 +43,9 @@ function ContractList() {
   return (
     <div style={{ position: 'relative' }}>
       <h3>계약별 일정</h3>
-      <div className="button-row" style={{ marginBottom: 12 }}>
-        <button onClick={() => setStatus('')}>전체</button>
-        <button onClick={() => setStatus('진행')}>진행</button>
-        <button onClick={() => setStatus('완료')}>완료</button>
-        {deleteMode ? (
-          <>
-            <button onClick={handleDelete} disabled={checked.length === 0}>선택 삭제</button>
-            <button onClick={() => { setDeleteMode(false); setChecked([]); }}>취소</button>
-          </>
-        ) : (
-          <button onClick={() => setDeleteMode(true)}>삭제</button>
-        )}
-      </div>
       <ul>
-        {filtered.map(c => (
+        {contracts.map(c => (
           <li key={c.id} style={{ display: 'flex', alignItems: 'center' }}>
-            {deleteMode && (
-              <input type="checkbox" checked={checked.includes(c.id)} onChange={() => handleCheck(c.id)} style={{ marginRight: 8 }} />
-            )}
             <span
               style={{ flex: 1, cursor: 'pointer', fontWeight: selected && selected.id === c.id ? 'bold' : 'normal', display: selected && selected.id === c.id && !editMode ? 'none' : 'block' }}
               onClick={() => { setSelected(c); setEditMode(false); }}
@@ -102,8 +74,15 @@ function ContractList() {
                     <div><b>상태:</b> <span style={{ color: selected.status === '완료' ? '#228be6' : '#fab005', fontWeight: 500 }}>{selected.status}</span></div>
                     <div style={{ marginTop: 8 }}><b>설명:</b> <span style={{ color: '#444' }}>{selected.desc}</span></div>
                   </div>
+                  <div style={{ display: 'flex', flexDirection: 'row', gap: 12, marginLeft: 18 }}>
+                    <button style={{ background: '#fff', color: '#2563eb', border: '1px solid #2563eb', borderRadius: 8, padding: '8px 24px', fontWeight: 500, fontSize: '1rem', cursor: 'pointer' }}
+                      onClick={() => { setEditData({ name: selected.name, date: selected.date, status: selected.status, desc: selected.desc }); setEditMode(true); }}
+                    >수정</button>
+                    <button style={{ background: '#e11d48', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 24px', fontWeight: 600, fontSize: '1rem', cursor: 'pointer' }}
+                      onClick={() => handleDelete(selected.id)}
+                    >삭제</button>
+                  </div>
                 </div>
-                <button style={{ marginLeft: 12 }} onClick={() => { setEditData({ name: selected.name, date: selected.date, status: selected.status, desc: selected.desc }); setEditMode(true); }}>수정</button>
               </>
             )}
             {selected && selected.id === c.id && editMode && (

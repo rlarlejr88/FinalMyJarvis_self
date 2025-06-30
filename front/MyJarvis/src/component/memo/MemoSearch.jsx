@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import './MemoSearch.css';
 
 /*
   키워드 검색, 작성일 순 정렬
@@ -22,16 +23,16 @@ function MemoSearch() {
     m.text.includes(keyword)
   ).sort((a, b) => sort === '최신순' ? b.date.localeCompare(a.date) : a.date.localeCompare(b.date));
   return (
-    <div>
+    <div className="memo-search">
       <h3>메모 검색</h3>
       <input value={keyword} onChange={e => setKeyword(e.target.value)} placeholder="키워드 검색" />
       <select value={sort} onChange={e => setSort(e.target.value)}>
         <option>최신순</option>
         <option>오래된순</option>
       </select>
-      <ul>
+      <ul className="memo-search-list">
         {filtered.map(m => (
-          <li key={m.id}>{m.text} ({m.date}) - 태그: {m.tags.join(', ')}</li>
+          <li key={m.id} className="memo-search-list-item">{m.text} ({m.date}) - 태그: {m.tags.join(', ')}</li>
         ))}
       </ul>
     </div>
