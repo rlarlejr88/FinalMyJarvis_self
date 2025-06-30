@@ -7,6 +7,10 @@ import kr.or.iei.meeting.model.dao.MeetingDao;
 
 @Service
 public class MeetingService {
+	
      @Autowired
      private MeetingDao dao;
+     
+     
+     
 }

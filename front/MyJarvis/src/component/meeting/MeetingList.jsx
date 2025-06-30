@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import SumAndMakeTag from './SumAndMakeTag';
 import './MeetingList.css';
 
@@ -20,12 +20,34 @@ const initialMeetings = [
   { id: 2, title: '기획 회의', date: '2025-06-21', tags: ['기획'], content: '신규 프로젝트 기획 및 역할 분담.' },
 ];
 
-function MeetingList({ meetings, setMeetings, setTab, setSelectedTag }) {
-  const [selected, setSelected] = useState(null);
+function MeetingList({ meetings, setMeetings, setTab, selected, setSelected, scrollToId }) {
+  // 각 회의 li에 ref를 연결
+  const itemRefs = useRef({});
 
-  const handleTagClick = (tag) => {
-    if (setSelectedTag && setTab) {
-      setSelectedTag(tag);
+  // 외부에서 selected가 바뀌면 상세 포커스 및 스크롤 이동
+  useEffect(() => {
+    if (selected && itemRefs.current[selected.id]) {
+      itemRefs.current[selected.id].scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    if (selected && !meetings.find(m => m.id === selected.id)) {
+      setSelected(null);
+    }
+  }, [selected, meetings, setSelected]);
+
+  // 외부에서 scrollToId가 들어오면 해당 회의로 이동 및 상세 오픈
+  useEffect(() => {
+    if (scrollToId && itemRefs.current[scrollToId]) {
+      setSelected(meetings.find(m => m.id === scrollToId));
+      setTimeout(() => {
+        if (itemRefs.current[scrollToId]) {
+          itemRefs.current[scrollToId].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+    }
+  }, [scrollToId, meetings, setSelected]);
+
+  const handleTagClick = () => {
+    if (setTab) {
       setTab('tag');
     }
   };
@@ -40,6 +62,7 @@ function MeetingList({ meetings, setMeetings, setTab, setSelectedTag }) {
   };
 
   const filtered = meetings;
+
   return (
     <div>
       <h3>회의록 목록</h3>
@@ -47,24 +70,27 @@ function MeetingList({ meetings, setMeetings, setTab, setSelectedTag }) {
         {filtered.map(m => (
           <li
             key={m.id}
+            ref={el => itemRefs.current[m.id] = el}
             className={`meeting-list-item${selected && selected.id === m.id ? ' selected' : ''}`}
             onClick={() => setSelected(m)}
           >
             <b>{m.title}</b> <span style={{ color: '#888', fontSize: '0.95em' }}>({m.date})</span><br />
             <span>
               태그: {m.tags && m.tags.length > 0 ? m.tags.map((tag, idx) => (
-                <span key={tag} className="meeting-tag" onClick={e => { e.stopPropagation(); handleTagClick(tag); }}>
-                  {tag}
-                  {selected && selected.id === m.id && (
-                    <button
-                      className="meeting-tag-remove"
-                      onClick={e => { e.stopPropagation(); handleRemoveTag(m.id, tag); }}
-                      title="태그 삭제"
-                      style={{ marginLeft: 2, color: '#888', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1em' }}
-                    >×</button>
-                  )}
-                  {idx < m.tags.length - 1 ? ', ' : ''}
-                </span>
+                <React.Fragment key={tag}>
+                  <span className="meeting-tag" onClick={e => { e.stopPropagation(); handleTagClick(tag); }}>
+                    {tag}
+                    {selected && selected.id === m.id && (
+                      <button
+                        className="meeting-tag-remove"
+                        onClick={e => { e.stopPropagation(); handleRemoveTag(m.id, tag); }}
+                        title="태그 삭제"
+                        style={{ marginLeft: 2, color: '#888', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1em' }}
+                      >×</button>
+                    )}
+                  </span>
+                  {idx < m.tags.length - 1 && <span className="meeting-tag-comma">, </span>}
+                </React.Fragment>
               )) : '없음'}
             </span>
             {selected && selected.id === m.id && (

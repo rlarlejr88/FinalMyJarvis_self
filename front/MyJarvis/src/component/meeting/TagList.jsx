@@ -1,76 +1,90 @@
 import React, { useState, useEffect } from 'react';
-import SumAndMakeTag from './SumAndMakeTag';
 import './TagList.css';
 
-function TagList({ meetings, setMeetings, selectedTag, setSelectedTag }) {
-  const [selectedMeeting, setSelectedMeeting] = useState(null);
-  const [checked, setChecked] = useState([]);
-  const [deleteMode] = useState(false);
+function TagList({ meetings, setMeetings, setTab, setScrollToId }) {
+  const [selectedMeeting, setLocalSelectedMeeting] = useState(null);
+  const [selectedTags, setLocalSelectedTags] = useState([]); // 다중 태그 선택
 
-  // 태그별 필터링
-  const filtered = selectedTag
-    ? meetings.filter(m => (m.tags || []).includes(selectedTag))
+  // 전체 태그 목록 추출
+  const allTags = Array.from(new Set(meetings.flatMap(m => m.tags || [])));
+
+  // 다중 태그 클릭
+  const handleTagClick = (tag) => {
+    setLocalSelectedMeeting(null);
+    setLocalSelectedTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
+  };
+
+  // 선택된 태그 기준 필터링
+  const filtered = selectedTags.length > 0
+    ? meetings.filter(m => selectedTags.every(tag => (m.tags || []).includes(tag)))
     : meetings;
 
-  const handleCheck = (id) => {
-    setChecked(prev => prev.includes(id) ? prev.filter(cid => cid !== id) : [...prev, id]);
-  };
-
-  // 태그 클릭 시 해당 태그로 필터링
-  const handleTagClick = (tag) => {
-    if (setSelectedTag) setSelectedTag(tag);
-  };
-
   useEffect(() => {
-    // selectedTag가 바뀌면 상세보기 닫기
-    setSelectedMeeting(null);
-  }, [selectedTag]);
+    setLocalSelectedMeeting(null);
+  }, [selectedTags]);
+
+  // 본문으로 버튼 클릭 시 회의록 목록 탭으로 이동 및 해당 회의 id 전달
+  const handleGoToMainList = (meeting) => {
+    if (setTab && setScrollToId) {
+      setTab('list');
+      setScrollToId(meeting.id);
+    }
+  };
 
   return (
     <div>
-      <h3>태그별 회의 목록{selectedTag ? `: ${selectedTag}` : ''}</h3>
+      <h3>태그별 회의 목록</h3>
+      <div className="taglist-tagbar">
+        {allTags.length > 0 ? allTags.map(tag => (
+          <span
+            key={tag}
+            className={`meeting-tag${selectedTags.includes(tag) ? ' selected' : ''}`}
+            onClick={() => handleTagClick(tag)}
+            style={{ marginRight: 6, marginBottom: 4 }}
+          >
+            {tag}
+          </span>
+        )) : <span style={{ color: '#bbb' }}>등록된 태그 없음</span>}
+      </div>
       <ul className="taglist-list">
         {filtered.map(m => (
           <li
             key={m.id}
             className={`taglist-item${selectedMeeting && selectedMeeting.id === m.id ? ' selected' : ''}`}
-            onClick={() => {
-              if (!selectedMeeting || selectedMeeting.id !== m.id) setSelectedMeeting(m);
-            }}
           >
-            {deleteMode && !selectedMeeting && (
-              <input type="checkbox" checked={checked.includes(m.id)} onChange={e => { e.stopPropagation(); handleCheck(m.id); }} />
-            )}
-            <b>{m.title}</b> ({m.date})<br />
-            <span>참여자: {m.participants || '-'} </span><br />
-            <span>
-              태그: {m.tags && m.tags.length > 0 ? m.tags.map(tag => (
-                <span key={tag} className="meeting-tag" onClick={e => { e.stopPropagation(); handleTagClick(tag); }}>{tag}</span>
-              )) : '없음'}
-            </span>
+            <div className="taglist-summary-row">
+              <div>
+                <b>{m.title}</b> <span style={{ color: '#888', fontSize: '0.95em' }}>({m.date})</span><br />
+                <span className="taglist-participants">참여자: {m.participants || '-'}</span>
+              </div>
+              <button className="taglist-detail-btn" onClick={() => setLocalSelectedMeeting(m)}>상세보기</button>
+            </div>
             {(selectedMeeting && selectedMeeting.id === m.id) ? (
               <div className="meeting-detail">
                 <div className="meeting-detail-section">
                   <b style={{ textAlign: 'center', width: '100%' }}>회의 내용:</b>
                   <div style={{ textAlign: 'center', maxWidth: 400, width: '100%' }}>{selectedMeeting.content}</div>
                 </div>
-                <div className="meeting-detail-section">
-                  <SumAndMakeTag initialContent={selectedMeeting.content} />
-                  <div className="meeting-detail-btns">
-                    <button className="delete-btn"
-                      onClick={e => {
-                        e.stopPropagation();
-                        setMeetings(meetings.filter(mm => mm.id !== m.id));
-                        setSelectedMeeting(null);
-                      }}
-                    >삭제</button>
-                    <button className="back-btn"
-                      onClick={e => {
-                        e.stopPropagation();
-                        setSelectedMeeting(null);
-                      }}
-                    >목록으로</button>
-                  </div>
+                <div className="meeting-detail-btns">
+                  <button className="delete-btn"
+                    onClick={e => {
+                      e.stopPropagation();
+                      setMeetings(meetings.filter(mm => mm.id !== m.id));
+                      setLocalSelectedMeeting(null);
+                    }}
+                  >삭제</button>
+                  <button className="back-btn"
+                    onClick={e => {
+                      e.stopPropagation();
+                      setLocalSelectedMeeting(null);
+                    }}
+                  >목록으로</button>
+                  <button className="goto-main-btn"
+                    onClick={e => {
+                      e.stopPropagation();
+                      handleGoToMainList(m);
+                    }}
+                  >본문으로</button>
                 </div>
               </div>
             ) : null}

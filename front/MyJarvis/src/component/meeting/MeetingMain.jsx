@@ -13,18 +13,19 @@ const initialMeetings = [
 function MeetingMain() {
   const [tab, setTab] = useState('list');
   const [meetings, setMeetings] = useState(initialMeetings);
-  const [selectedTag, setSelectedTag] = useState(null);
+  const [mainSelectedMeeting, setMainSelectedMeeting] = useState(null);
+  const [scrollToId, setScrollToId] = useState(null);
   return (
     <div className="meeting-main">
       <h2>회의 관리</h2>
       <div className="button-row">
-        <button onClick={() => { setTab('list'); setSelectedTag(null); }}>회의록 목록</button>
-        <button onClick={() => { setTab('insert'); setSelectedTag(null); }}>회의록 등록</button>
-        <button onClick={() => { setTab('tag'); setSelectedTag(null); }}>태그별 보기</button>
+        <button onClick={() => setTab('list')}>회의록 목록</button>
+        <button onClick={() => setTab('insert')}>회의록 등록</button>
+        <button onClick={() => setTab('tag')}>태그별 보기</button>
       </div>
-      {tab === 'list' && <MeetingList meetings={meetings} setMeetings={setMeetings} setTab={setTab} setSelectedTag={setSelectedTag} />}
+      {tab === 'list' && <MeetingList meetings={meetings} setMeetings={setMeetings} setTab={setTab} setSelected={setMainSelectedMeeting} selected={mainSelectedMeeting} scrollToId={scrollToId} />}
       {tab === 'insert' && <MeetingInsert setMeetings={setMeetings} setTab={setTab} />}
-      {tab === 'tag' && <TagList meetings={meetings} setMeetings={setMeetings} selectedTag={selectedTag} setSelectedTag={setSelectedTag} />}
+      {tab === 'tag' && <TagList meetings={meetings} setMeetings={setMeetings} setTab={setTab} setSelectedMeeting={setMainSelectedMeeting} setScrollToId={setScrollToId} />}
     </div>
   );
 }

@@ -1,78 +1,81 @@
 import React, { useState } from 'react';
 import './DailyWorkList.css';
 
-/*
-  오늘 할 일, 완료/미완료 분류
-
-  - To-do 리스트 등록
-  - 체크박스로 완료 상태 표시
-  - 작업 중요도 선택(Low/Medium/High)
-  - 작업 정렬(기한순, 중요도순 등)
-  - 완료 항목 숨기기 옵션
- */
-
-// 오늘 할 일, To-do 등록/완료 체크, 중요도/정렬 샘플
-const initialTodos = [
-  { id: 1, text: '보고서 작성', done: false, priority: 'High' },
-  { id: 2, text: '미팅 준비', done: true, priority: 'Low' },
-];
-
 function DailyWorkList() {
-  const [todos, setTodos] = useState(initialTodos);
+  const [tasks, setTasks] = useState([
+    { id: 1, text: '회의록 정리', done: false, important: true },
+    { id: 2, text: '계약 일정 확인', done: false, important: false },
+    { id: 3, text: 'To-do 기능 구현', done: true, important: false },
+  ]);
   const [input, setInput] = useState('');
-  const [priority, setPriority] = useState('Medium');
-  const [deleteMode, setDeleteMode] = useState(false);
-  const [checked, setChecked] = useState([]);
+  const [hideDone, setHideDone] = useState(false);
+  const [filter, setFilter] = useState('all'); // all, important
 
-  const addTodo = () => {
-    if (!input) return;
-    setTodos([...todos, { id: Date.now(), text: input, done: false, priority }]);
-    setInput('');
+  const handleAdd = () => {
+    if (input.trim()) {
+      setTasks([
+        ...tasks,
+        { id: Date.now(), text: input, done: false, important: false },
+      ]);
+      setInput('');
+    }
   };
-  const toggleDone = id => {
-    setTodos(todos.map(t => t.id === id ? { ...t, done: !t.done } : t));
+
+  const handleToggle = (id) => {
+    setTasks(tasks.map(t => t.id === id ? { ...t, done: !t.done } : t));
   };
-  const handleCheck = id => {
-    setChecked(checked.includes(id) ? checked.filter(cid => cid !== id) : [...checked, id]);
+
+  const handleDelete = (id) => {
+    setTasks(tasks.filter(t => t.id !== id));
   };
-  const handleDelete = () => {
-    setTodos(todos.filter(t => !checked.includes(t.id)));
-    setChecked([]);
-    setDeleteMode(false);
+
+  const handleImportant = (id) => {
+    setTasks(tasks.map(t => t.id === id ? { ...t, important: !t.important } : t));
   };
-  const handleCancel = () => {
-    setChecked([]);
-    setDeleteMode(false);
-  };
+
+  const filtered = tasks.filter(t => {
+    if (hideDone && t.done) return false;
+    if (filter === 'important' && !t.important) return false;
+    return true;
+  });
+
+  const progress = tasks.length ? Math.round((tasks.filter(t => t.done).length / tasks.length) * 100) : 0;
 
   return (
-    <div>
-      <h3>오늘 할 일</h3>
-      <div className="button-row">
-        <input value={input} onChange={e => setInput(e.target.value)} placeholder="할 일 입력" />
-        <select value={priority} onChange={e => setPriority(e.target.value)}>
-          <option>Low</option><option>Medium</option><option>High</option>
-        </select>
-        <button onClick={addTodo}>추가</button>
-        {deleteMode ? (
-          <>
-            <button onClick={handleDelete} disabled={checked.length === 0}>선택 삭제</button>
-            <button onClick={handleCancel}>취소</button>
-          </>
-        ) : (
-          <button onClick={() => setDeleteMode(true)}>삭제</button>
-        )}
+    <div className="dailywork-container">
+      <h3>오늘의 To-do</h3>
+      <div className="dailywork-controls">
+        <input
+          className="dailywork-input"
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          placeholder="할 일을 입력하세요"
+          onKeyDown={e => e.key === 'Enter' && handleAdd()}
+        />
+        <button className="dailywork-add-btn" onClick={handleAdd}>추가</button>
+        <button className="dailywork-filter-btn" onClick={() => setFilter(filter === 'all' ? 'important' : 'all')}>
+          {filter === 'all' ? '⭐ 중요만' : '전체'}
+        </button>
+        <label className="dailywork-hide-done">
+          <input type="checkbox" checked={hideDone} onChange={e => setHideDone(e.target.checked)} /> 완료 숨기기
+        </label>
       </div>
-      <ul>
-        {todos.map(t => (
-          <li key={t.id} className="dailywork-listitem" style={t.done ? { textDecoration: 'line-through' } : {}}>
-            {deleteMode && (
-              <input type="checkbox" checked={checked.includes(t.id)} onChange={() => handleCheck(t.id)} className="dailywork-checkbox" />
-            )}
-            <span className="dailywork-span">
-              <input type="checkbox" checked={t.done} onChange={() => toggleDone(t.id)} disabled={deleteMode} className="dailywork-checkbox" />
-              {t.text} ({t.priority})
+      <div className="dailywork-progress">
+        <div className="dailywork-progress-bar" style={{ width: `${progress}%` }} />
+        <span className="dailywork-progress-text">진행률: {progress}%</span>
+      </div>
+      <ul className="dailywork-list">
+        {filtered.length === 0 && <li className="dailywork-empty">할 일이 없습니다</li>}
+        {filtered.map(task => (
+          <li key={task.id} className={`dailywork-item${task.done ? ' done' : ''}${task.important ? ' important' : ''}`}>
+            <span className="dailywork-check" onClick={() => handleToggle(task.id)}>
+              {task.done ? '✔️' : '⬜'}
             </span>
+            <span className="dailywork-text">{task.text}</span>
+            <button className="dailywork-important-btn" onClick={() => handleImportant(task.id)}>
+              {task.important ? '⭐' : '☆'}
+            </button>
+            <button className="dailywork-delete-btn" onClick={() => handleDelete(task.id)}>삭제</button>
           </li>
         ))}
       </ul>
