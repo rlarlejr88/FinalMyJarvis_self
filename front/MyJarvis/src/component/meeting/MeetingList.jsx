@@ -32,7 +32,11 @@ function MeetingList({ meetings, setMeetings, setTab, setSelectedTag }) {
 
   const handleSaveTags = (meetingId, newTags) => {
     setMeetings(prev => prev.map(m => m.id === meetingId ? { ...m, tags: Array.from(new Set([...(m.tags || []), ...newTags])) } : m));
-    // 태그 저장 후 바로 상세에 반영됨
+  };
+
+  // 태그 삭제 핸들러
+  const handleRemoveTag = (meetingId, tag) => {
+    setMeetings(prev => prev.map(m => m.id === meetingId ? { ...m, tags: (m.tags || []).filter(t => t !== tag) } : m));
   };
 
   const filtered = meetings;
@@ -50,7 +54,16 @@ function MeetingList({ meetings, setMeetings, setTab, setSelectedTag }) {
             <span>
               태그: {m.tags && m.tags.length > 0 ? m.tags.map((tag, idx) => (
                 <span key={tag} className="meeting-tag" onClick={e => { e.stopPropagation(); handleTagClick(tag); }}>
-                  {tag}{idx < m.tags.length - 1 ? ', ' : ''}
+                  {tag}
+                  {selected && selected.id === m.id && (
+                    <button
+                      className="meeting-tag-remove"
+                      onClick={e => { e.stopPropagation(); handleRemoveTag(m.id, tag); }}
+                      title="태그 삭제"
+                      style={{ marginLeft: 2, color: '#888', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1em' }}
+                    >×</button>
+                  )}
+                  {idx < m.tags.length - 1 ? ', ' : ''}
                 </span>
               )) : '없음'}
             </span>
