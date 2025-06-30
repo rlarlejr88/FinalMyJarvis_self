@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import SumAndMakeTag from './SumAndMakeTag';
 import './MeetingList.css';
 
@@ -61,6 +61,19 @@ function MeetingList({ meetings, setMeetings, setTab, selected, setSelected, scr
     setMeetings(prev => prev.map(m => m.id === meetingId ? { ...m, tags: (m.tags || []).filter(t => t !== tag) } : m));
   };
 
+  const [editId, setEditId] = useState(null);
+  const [editContent, setEditContent] = useState('');
+
+  const handleEdit = (meeting) => {
+    setEditId(meeting.id);
+    setEditContent(meeting.content);
+  };
+
+  const handleSaveEdit = (id) => {
+    setMeetings(prev => prev.map(m => m.id === id ? { ...m, content: editContent } : m));
+    setEditId(null);
+  };
+
   const filtered = meetings;
 
   return (
@@ -97,7 +110,27 @@ function MeetingList({ meetings, setMeetings, setTab, selected, setSelected, scr
               <div className="meeting-detail">
                 <div className="meeting-detail-section">
                   <b>회의 내용:</b>
-                  <div>{selected.content}</div>
+                  <div>{editId === m.id ? (
+                    <textarea
+                      className="meeting-edit-textarea"
+                      value={editContent}
+                      onChange={e => setEditContent(e.target.value)}
+                      rows={4}
+                    />
+                  ) : (
+                    selected.content
+                  )}
+                  <div className="meeting-detail-btns-bottom">
+                    {editId === m.id ? (
+                      <>
+                        <button className="meeting-detail-save-btn" onClick={e => { e.stopPropagation(); handleSaveEdit(m.id); }}>저장</button>
+                        <button className="meeting-detail-cancel-btn" onClick={e => { e.stopPropagation(); setEditId(null); }}>취소</button>
+                      </>
+                    ) : (
+                      <button className="meeting-detail-edit-btn" onClick={e => { e.stopPropagation(); handleEdit(m); }}>수정</button>
+                    )}
+                  </div>
+                  </div>
                 </div>
                 <div className="meeting-detail-section">
                   <SumAndMakeTag

@@ -18,11 +18,9 @@ function MeetingMain() {
   return (
     <div className="meeting-main">
       <h2>회의 관리</h2>
-      <div className="button-row">
         <button onClick={() => setTab('list')}>회의록 목록</button>
         <button onClick={() => setTab('insert')}>회의록 등록</button>
         <button onClick={() => setTab('tag')}>태그별 보기</button>
-      </div>
       {tab === 'list' && <MeetingList meetings={meetings} setMeetings={setMeetings} setTab={setTab} setSelected={setMainSelectedMeeting} selected={mainSelectedMeeting} scrollToId={scrollToId} />}
       {tab === 'insert' && <MeetingInsert setMeetings={setMeetings} setTab={setTab} />}
       {tab === 'tag' && <TagList meetings={meetings} setMeetings={setMeetings} setTab={setTab} setSelectedMeeting={setMainSelectedMeeting} setScrollToId={setScrollToId} />}
