@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import kr.or.iei.common.model.dto.ResponseDTO;
 import kr.or.iei.meeting.model.dto.Meeting;
@@ -15,7 +16,7 @@ import kr.or.iei.meeting.model.service.MeetingService;
 
 @RestController
 @CrossOrigin("*")
-@RequestMapping("/member")
+@RequestMapping("/api/meetings")
 public class MeetingController {
 	
      @Autowired
@@ -26,8 +27,21 @@ public class MeetingController {
      public ResponseEntity<ResponseDTO> insertMeeting(@ModelAttribute Meeting meeting){
     	 ResponseDTO res = new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR, "등록 중, 에러가 발생했습니다.!!", false, "error");
     	 
+    	 try {
+    		 
+    		 meeting.setMemberNo("1"); // ⭐ 테스트용 memberNo 하드코딩
+    		 int result = service.insertMeeting(meeting);
+    		 
+    		 if(result > 0) {
+    			 res = new ResponseDTO(HttpStatus.OK, "회의록 등록 완료", true, "success");
+    		 }else {
+    			res = new ResponseDTO(HttpStatus.OK, "등록 중, 오류 발생", false, "error"); 
+    		 }
+    	 }catch(Exception e) {
+    		 e.printStackTrace();
+    	 }
     	 
-    	 return null;
+    	 return new ResponseEntity<ResponseDTO>(res, res.getHttpStatus());
      }
      
      // 회의록 수정
