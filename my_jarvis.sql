@@ -60,8 +60,11 @@ CREATE TABLE TBL_COMPANY (
     COMP_NAME VARCHAR2(100) NOT NULL,                           -- 거래처명
     COMP_TEL VARCHAR2(100),                                     -- 거래처 전화번호
     COMP_ADDR VARCHAR2(100),                                    -- 거래처 주소
+    OWNER_NAME VARCHAR2(30),				-- 대표자 이름
     TRADE_STATUS CHAR(1)  DEFAULT '1' NOT NULL,                  -- 거래 상태 ('1': 거래, '2': 거래중지)
-    REG_DATE DATE DEFAULT SYSDATE NOT NULL ,                         -- 거래처 등록일자
+   COMP_TYPE CHAR(1) NOT NULL,				-- 사업자 유형 ( C:법인 , P:개인 )    
+   COMP_NO VARCHAR2(100) NULL,				-- 사업자 번호
+   REG_DATE DATE DEFAULT SYSDATE NOT NULL ,                         -- 거래처 등록일자
 
     CONSTRAINT PK_TBL_COMPANY PRIMARY KEY (COMP_CD, MEMBER_NO), -- 복합 기본키: 동일 회원이 가진 거래처 구분
     CONSTRAINT FK_COMPANY_MEMBER FOREIGN KEY (MEMBER_NO) REFERENCES TBL_MEMBER(MEMBER_NO) -- 회원 외래키
@@ -160,58 +163,98 @@ CREATE TABLE TBL_COMPANY_MEMBER (
 -- 거래처와 회원 간 등록 관계를 명확히 하기 위해 MEMBER_NO도 별도로 외래키로 연결되어 있습니다.
 
 
--- 계약 테이블
+-- 계약원장 테이블
 CREATE TABLE TBL_CONTRACT (
-    CONTRACT_NO VARCHAR2(20) NOT NULL,                           -- 계약 고유번호
-    MEMBER_NO VARCHAR2(20) NOT NULL,                             -- 회원 고유번호 (계약 등록자)
-    COMP_CD VARCHAR2(20),                                        -- 거래처 고유번호 (법인 고객일 경우)
-    CLIENT_NO VARCHAR2(20),                                      -- 개인 고객 고유번호
-    STATUS_CODE VARCHAR2(20) NOT NULL,                           -- 계약 상태 코드 ('W', 'C', 'X', 'T')
-    CONTRACT_TITLE VARCHAR2(100) NOT NULL,                       -- 계약 제목
-    REG_DATE DATE DEFAULT SYSDATE NOT NULL ,                      -- 계약 등록일자
-    CONTRACT_START DATE NOT NULL,                                -- 계약 시작일
-    CONTRACT_END DATE NOT NULL,                                  -- 계약 종료일
-    CONTRACT_DEPOSIT NUMBER NOT NULL,                            -- 계약금
-    CONTRACT_CONFIRM DATE,                                       -- 계약 확정일자
+    CONTRACT_NO         VARCHAR2(20) NOT NULL,                  -- 계약 고유번호
+    MEMBER_NO           VARCHAR2(20) NOT NULL,                  -- 계약 등록 회원 번호
+    STATUS_CODE         VARCHAR2(20) NOT NULL,                  -- 계약 상태 코드 ('W', 'C', 'X', 'T')
+    CONTRACT_TITLE      VARCHAR2(100) NOT NULL,                 -- 계약 제목
+    CONTRACT_CONTENT CLOB NOT NULL,			-- 계약 내용
+    REG_DATE            DATE DEFAULT SYSDATE NOT NULL,          -- 계약 등록일자
+    CONTRACT_START      DATE NOT NULL,                          -- 계약 시작일
+    CONTRACT_END        DATE NOT NULL,                          -- 계약 종료일
+    CONTRACT_DEPOSIT    NUMBER NOT NULL,                        -- 계약금
+    CONTRACT_CONFIRM    DATE,                                   -- 계약 확정일자
 
-    CONSTRAINT PK_TBL_CONTRACT PRIMARY KEY (CONTRACT_NO),        --  단일 기본키
-    CONSTRAINT UQ_CONTRACT_STATUS UNIQUE (CONTRACT_NO, STATUS_CODE), --  상태코드 보조 제약
+    CONSTRAINT PK_TBL_CONTRACT PRIMARY KEY (CONTRACT_NO),
+    CONSTRAINT UQ_CONTRACT_STATUS UNIQUE (CONTRACT_NO, STATUS_CODE),
     CONSTRAINT FK_CONTRACT_MEMBER FOREIGN KEY (MEMBER_NO) REFERENCES TBL_MEMBER(MEMBER_NO),
-    CONSTRAINT FK_CONTRACT_CLIENT FOREIGN KEY (CLIENT_NO, MEMBER_NO) REFERENCES TBL_CLIENT(CLIENT_NO, MEMBER_NO),
-    CONSTRAINT FK_CONTRACT_COMP     FOREIGN KEY (COMP_CD, MEMBER_NO) REFERENCES TBL_COMPANY(COMP_CD, MEMBER_NO),
     CONSTRAINT FK_CONTRACT_STATUS FOREIGN KEY (STATUS_CODE) REFERENCES TBL_CONTRACT_STATUS(STATUS_CODE)
 );
 
 -- 계약 정보를 저장하는 핵심 테이블입니다.
 -- CONTRACT_NO는 단일 기본키로 사용되며, 각 계약을 고유하게 식별합니다.
--- 계약은 반드시 회원(MEMBER_NO)에 의해 등록되며, 계약 상대는 법인 고객(COMP_CD) 또는 개인 고객(CLIENT_NO) 중 하나일 수 있습니다.
--- 단, CLIENT_NO와 COMP_CD는 각각 MEMBER_NO와 복합 외래키로 연결되어, 해당 회원이 등록한 고객만 참조할 수 있습니다.
+-- 계약은 반드시 회원(MEMBER_NO)에 의해 등록되며, 계약 상대는 계약 대상 테이블과 연결되어 있습니다.
 -- 계약 상태는 STATUS_CODE로 표현되며, 상태코드별 관리 및 통제를 위해 보조 UNIQUE 제약(CONTRACT_NO + STATUS_CODE)이 설정되어 있습니다.
 -- 계약의 주요 정보로는 계약 제목, 계약금, 시작일, 종료일, 확정일이 포함되며, 등록일은 기본값으로 SYSDATE가 자동 설정됩니다.
 
 
+-- 계약대상 테이블
+CREATE TABLE TBL_CONTRACT_PARTY (
+    ID             NUMBER PRIMARY KEY,                               -- 고유 식별자 (시퀀스 사용 권장)
+    CONTRACT_NO    VARCHAR2(20) NOT NULL,                            -- 계약 번호
+    CLIENT_NO      VARCHAR2(20),                                     -- 개인 고객 번호 (nullable)
+    COMP_CD        VARCHAR2(20),                                     -- 거래처 고객사 번호 (nullable)
+    MEMBER_NO      VARCHAR2(20) NOT NULL,                            -- 대상 고객의 소속 회원
+    ROLE           VARCHAR2(50),                                     -- 계약 내 역할 (예: 당사자, 참조자 등)
+
+    CONSTRAINT FK_PARTY_CONTRACT FOREIGN KEY (CONTRACT_NO)
+        REFERENCES TBL_CONTRACT(CONTRACT_NO),
+
+    CONSTRAINT FK_PARTY_CLIENT FOREIGN KEY (CLIENT_NO, MEMBER_NO)
+        REFERENCES TBL_CLIENT(CLIENT_NO, MEMBER_NO),
+
+    CONSTRAINT FK_PARTY_COMPANY FOREIGN KEY (COMP_CD, MEMBER_NO)
+        REFERENCES TBL_COMPANY(COMP_CD, MEMBER_NO)
+);
+
+-- 계약의 대상자(개인 고객 또는 법인 고객사)를 저장하는 서브 테이블입니다.
+-- CONTRACT_NO를 기준으로 계약 원장 테이블(TBL_CONTRACT)과 연결되며, 1:N 구조로 구성됩니다.
+-- 대상자는 개인 고객(CLIENT_NO) 또는 법인 고객사(COMP_CD) 중 하나로 연결되며, 각각의 소속 회원(MEMBER_NO)을 기준으로 무결성을 확보합니다.
+-- CLIENT_NO와 COMP_CD는 동시에 사용되지 않으며, 애플리케이션 단에서 한 쪽만 입력되도록 제어해야 합니다.
+
+
 -- 회의 테이블
 CREATE TABLE TBL_MEETING (
-    MEETING_NO VARCHAR2(20) NOT NULL,                         -- 회의 고유번호 (단일 PK)
-    MEMBER_NO VARCHAR2(20) NOT NULL,                          -- 회원 고유번호 (작성자)
-    CLIENT_NO VARCHAR2(20),                                   -- 개인 고객 고유번호 (nullable)
-    COMP_CD VARCHAR2(20),                                     -- 거래처 고유번호 (nullable)
-    MEET_TITLE VARCHAR2(100) NOT NULL,                        -- 회의 제목
-    MEET_CONTENT CLOB NOT NULL,                               -- 회의 내용
-    MEET_DATE DATE DEFAULT SYSDATE NOT NULL ,                  -- 회의 일자
-    GPT_SUMMARY VARCHAR2(1024),                               -- AI 요약 내용
+    MEETING_NO     VARCHAR2(20) NOT NULL,                          -- 회의 고유번호
+    MEMBER_NO      VARCHAR2(20) NOT NULL,                          -- 작성자 회원번호
+    MEET_TITLE     VARCHAR2(100) NOT NULL,                         -- 회의 제목
+    MEET_CONTENT   CLOB NOT NULL,                                  -- 회의 내용
+    MEET_DATE      DATE DEFAULT SYSDATE NOT NULL,                  -- 회의 일자
+    GPT_SUMMARY    VARCHAR2(1024),                                 -- AI 요약 내용
 
-    CONSTRAINT PK_TBL_MEETING PRIMARY KEY (MEETING_NO),       -- 단일 기본키
-    CONSTRAINT FK_MEETING_MEMBER FOREIGN KEY (MEMBER_NO) REFERENCES TBL_MEMBER(MEMBER_NO),
-    CONSTRAINT FK_MEETING_CLIENT FOREIGN KEY (CLIENT_NO, MEMBER_NO) REFERENCES TBL_CLIENT(CLIENT_NO, MEMBER_NO),
-    CONSTRAINT FK_MEETING_COMP FOREIGN KEY (COMP_CD, MEMBER_NO) REFERENCES TBL_COMPANY(COMP_CD, MEMBER_NO)
+    CONSTRAINT PK_TBL_MEETING PRIMARY KEY (MEETING_NO),
+    CONSTRAINT FK_MEETING_MEMBER FOREIGN KEY (MEMBER_NO)
+        REFERENCES TBL_MEMBER(MEMBER_NO)
 );
 
 -- 고객과의 사전 커뮤니케이션(회의, 상담 등) 내용을 기록하는 테이블입니다.
--- MEETING_NO는 회의의 고유 식별자로 단일 PK로 설정되어 조회 및 관리가 용이합니다.
--- 회의 대상은 개인 고객(CLIENT_NO + MEMBER_NO) 또는 법인 거래처(COMP_CD + MEMBER_NO) 중 하나와 연동됩니다.
--- 작성자는 MEMBER_NO를 통해 TBL_MEMBER 테이블과 외래키로 연결됩니다.
--- CLIENT_NO와 COMP_CD는 동시에 NULL일 수 있으며, 둘 중 하나는 반드시 선택되어야 하므로 서비스 로직에서 XOR 조건으로 제어해야 합니다.
+-- MEETING_NO는 단일 기본키이며, 각 회의를 고유하게 식별합니다.
+-- 회의는 반드시 회원(MEMBER_NO)에 의해 등록되며, 회의의 대상자는 별도의 회의참석자 테이블(TBL_MEETING_PARTICIPANT)과 연결됩니다.
+-- 회의의 주요 정보로는 회의 제목, 회의 내용, AI 요약 결과가 있으며, 회의 일자는 기본값으로 SYSDATE가 자동 설정됩니다.
+
+
+-- 회의참여자 테이블
+CREATE TABLE TBL_MEETING_PARTICIPANT (
+    MEETING_PARTICIPANT_NO            NUMBER  PRIMARY KEY,                              -- 회의 참여자 고유번호
+    MEETING_NO    VARCHAR2(20) NOT NULL,                           -- 회의 고유번호
+    CLIENT_NO     VARCHAR2(20),                                    -- 개인 고객 번호 (nullable)
+    COMP_CD       VARCHAR2(20),                                    -- 거래처 고객사 번호 (nullable)
+    MEMBER_NO     VARCHAR2(20) NOT NULL,                           -- 고객 소속 회원
+
+    CONSTRAINT FK_PARTICIPANT_MEETING FOREIGN KEY (MEETING_NO)
+        REFERENCES TBL_MEETING(MEETING_NO),
+
+    CONSTRAINT FK_PARTICIPANT_CLIENT FOREIGN KEY (CLIENT_NO, MEMBER_NO)
+        REFERENCES TBL_CLIENT(CLIENT_NO, MEMBER_NO),
+
+    CONSTRAINT FK_PARTICIPANT_COMPANY FOREIGN KEY (COMP_CD, MEMBER_NO)
+        REFERENCES TBL_COMPANY(COMP_CD, MEMBER_NO)
+);
+
+-- 회의 대상자(참석자)를 저장하는 테이블입니다.
+-- MEETING_NO를 기준으로 TBL_MEETING과 연결되며, 1:N 구조로 회의 대상자를 다수 연결할 수 있습니다.
+-- 참석자는 개인 고객(CLIENT_NO) 또는 거래처 고객사(COMP_CD) 중 하나로 지정되며, 각각의 소속 회원(MEMBER_NO)을 통해 무결성을 확보합니다.
 
 
 -- 태그맵 테이블
@@ -263,29 +306,55 @@ CREATE TABLE TBL_SCHEDULE (
 
 -- 결제/청구 테이블
 CREATE TABLE TBL_INVOICE (
-    INVOICE_NO VARCHAR2(20) NOT NULL,                             -- 결제 고유번호
-    CONTRACT_NO VARCHAR2(20) NOT NULL,                            -- 계약 고유번호
-    MEMBER_NO VARCHAR2(20) NOT NULL,                              -- 회원 고유번호 (등록자)
-    INVOICE_CLIENT VARCHAR2(200) NOT NULL,                        -- 수신인 이름 또는 회사명 (메일 발송용)
-    INVOICE_EMAIL VARCHAR2(200) NOT NULL,                         -- 수신인 이메일
-    INVOICE_DEPOSIT NUMBER NOT NULL,                              -- 결제 금액
-    INVOICE_SEND DATE NOT NULL,                                   -- 청구서 발송일자
-    INVOICE_IS_SEND CHAR(1) DEFAULT 'N' NOT NULL ,                 -- 발송 여부 ('Y' / 'N')
-    INVOICE_PAID DATE,                                            -- 입금일자 (실제 입금 시점)
-    INVOICE_IS_PAID CHAR(1) DEFAULT 'N' NOT NULL ,                 -- 입금 여부 ('Y' / 'N')
-    INVOICE_METHOD VARCHAR2(50) NOT NULL,                         -- 입금 방식 (계좌이체, 카드결제 등)
-    REG_DATE DATE DEFAULT SYSDATE NOT NULL ,                       -- 청구서 생성일자
+    INVOICE_NO        VARCHAR2(20) NOT NULL,                       -- 청구서 고유번호
+    CONTRACT_NO       VARCHAR2(20) NOT NULL,                       -- 계약 고유번호
+    MEMBER_NO         VARCHAR2(20) NOT NULL,                       -- 작성자 회원번호
+    INVOICE_DEPOSIT   NUMBER NOT NULL,                             -- 청구 금액
+    INVOICE_SEND      DATE NOT NULL,                               -- 청구서 발송일
+    INVOICE_IS_SEND   CHAR(1) DEFAULT 'N' NOT NULL,                -- 발송 여부 ('Y'/'N')
+    INVOICE_PAID      DATE,                                        -- 입금일자
+    INVOICE_IS_PAID   CHAR(1) DEFAULT 'N' NOT NULL,                -- 입금 여부 ('Y'/'N')
+    INVOICE_METHOD    VARCHAR2(50) NOT NULL,                       -- 결제 수단
+    REG_DATE          DATE DEFAULT SYSDATE NOT NULL,               -- 청구서 생성일자
 
-    CONSTRAINT PK_TBL_INVOICE PRIMARY KEY (INVOICE_NO, CONTRACT_NO, MEMBER_NO),
+    CONSTRAINT PK_TBL_INVOICE PRIMARY KEY (INVOICE_NO),
     CONSTRAINT FK_INVOICE_CONTRACT FOREIGN KEY (CONTRACT_NO) REFERENCES TBL_CONTRACT(CONTRACT_NO),
     CONSTRAINT FK_INVOICE_MEMBER FOREIGN KEY (MEMBER_NO) REFERENCES TBL_MEMBER(MEMBER_NO)
 );
 
--- 계약에 따른 청구/결제 정보를 관리하는 테이블입니다.
--- INVOICE_NO는 청구서 식별자이며, 계약(CONTRACT_NO), 등록자(MEMBER_NO)와 함께 복합 PK로 구성되어 있습니다.
--- 발송 여부(INVOICE_IS_SEND)와 입금 여부(INVOICE_IS_PAID)를 별도 관리하여 상태 추적이 가능합니다.
--- 입금 방식(INVOICE_METHOD), 발송일/입금일, 생성일자 등의 항목은 정산 흐름을 시각화하고 자동화하는 데 활용됩니다.
--- 계약(CONTRACT_NO) 및 작성자(MEMBER_NO)와 각각 외래키로 연결됩니다.
+
+-- 청구 정보를 저장하는 원장 테이블입니다.
+-- INVOICE_NO는 단일 기본키이며, 각 청구서를 고유하게 식별합니다.
+-- 청구서는 반드시 회원(MEMBER_NO)에 의해 작성되며, 계약(CONTRACT_NO)과 연결됩니다.
+-- 고객 정보는 별도의 청구 대상자 테이블(TBL_INVOICE_TARGET)을 통해 관리됩니다.
+-- 청구 금액, 결제 방식, 발송 여부, 입금 여부 등의 청구 관련 정보는 이 테이블에 기록됩니다.
+
+-- 결제대상자 테이블
+CREATE TABLE TBL_INVOICE_TARGET (
+    ID                    NUMBER PRIMARY KEY,                         -- 고유 식별자
+    INVOICE_NO            VARCHAR2(20) NOT NULL,                      -- 청구서 고유번호
+    CLIENT_NO             VARCHAR2(20),                               -- 개인 고객 번호 (nullable)
+    COMP_CD               VARCHAR2(20),                               -- 거래처 고객사 번호 (nullable)
+    MEMBER_NO             VARCHAR2(20) NOT NULL,                      -- 고객 소속 회원
+    INVOICE_CLIENT_NAME   VARCHAR2(200) NOT NULL,                     -- 수신인 이름 또는 회사명
+    INVOICE_CLIENT_EMAIL  VARCHAR2(200) NOT NULL,                     -- 수신인 이메일
+
+    CONSTRAINT FK_TARGET_INVOICE FOREIGN KEY (INVOICE_NO)
+        REFERENCES TBL_INVOICE(INVOICE_NO),
+
+    CONSTRAINT FK_TARGET_CLIENT FOREIGN KEY (CLIENT_NO, MEMBER_NO)
+        REFERENCES TBL_CLIENT(CLIENT_NO, MEMBER_NO),
+
+    CONSTRAINT FK_TARGET_COMPANY FOREIGN KEY (COMP_CD, MEMBER_NO)
+        REFERENCES TBL_COMPANY(COMP_CD, MEMBER_NO)
+);
+
+-- 청구 대상자 정보를 저장하는 테이블입니다.
+-- INVOICE_NO를 기준으로 TBL_INVOICE와 연결되며, 하나의 청구서에 여러 명의 고객을 연결할 수 있습니다.
+-- 대상자는 개인 고객(CLIENT_NO) 또는 거래처 고객사(COMP_CD) 중 하나로 설정되며,
+-- 각각의 고객은 소속 회원(MEMBER_NO)을 통해 소유 관계를 유지합니다.
+-- 수신인의 이름과 이메일은 실제 청구서 발송을 위한 정보로 활용됩니다.
+-- CLIENT_NO와 COMP_CD는 동시에 입력되지 않으며, 애플리케이션 단에서 한 쪽만 입력되도록 제어해야 합니다.
 
 
 -- 작업관리 테이블
@@ -320,6 +389,9 @@ CREATE TABLE TBL_TASK (
 -- 계약번호(CONTRACT_NO) 시퀀스
 CREATE SEQUENCE SEQ_TBL_CONTRACT_NO START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
 
+-- 계약대상번호(CONTRACT_PARTY_NO)
+CREATE SEQUENCE SEQ_CONTRACT_PARTY_ID START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
+
 -- 거래처코드(COMP_CD) 시퀀스
 CREATE SEQUENCE SEQ_TBL_COMPANY_CD START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
 
@@ -329,6 +401,9 @@ CREATE SEQUENCE SEQ_TBL_CLIENT_NO START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
 -- 회의번호(MEETING_NO) 시퀀스
 CREATE SEQUENCE SEQ_TBL_MEETING_NO START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
 
+-- 회의참여자(MEETING_PARTICIPANT_NO) 시퀀스
+CREATE SEQUENCE SEQ_MEETING_PARTICIPANT_ID START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
+
 -- 일정번호(SCHEDULE_NO) 시퀀스
 CREATE SEQUENCE SEQ_TBL_SCHEDULE_NO START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
 
@@ -337,6 +412,9 @@ CREATE SEQUENCE SEQ_TBL_TASK_NO START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
 
 -- 청구번호(INVOICE_NO) 시퀀스
 CREATE SEQUENCE SEQ_TBL_INVOICE_NO START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
+
+-- 결제대상자번호(INVOICE_TARGET_NO) 시퀀스
+CREATE SEQUENCE SEQ_INVOICE_TARGET_ID START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
 
 -- 메모번호(MEMO_NO) 시퀀스
 CREATE SEQUENCE SEQ_TBL_MEMO_NO START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;

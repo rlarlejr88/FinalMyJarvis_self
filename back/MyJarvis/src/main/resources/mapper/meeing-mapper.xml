@@ -1,6 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="">
+<mapper namespace="kr.or.iei.meeting.model.dao.MeetingDao">
 
+<!-- 회의록 등록 -->
+<insert id="insertMeeting"
+parameterType="Meeting">
+insert into tbl_meeting (
+    meeting_no,
+    meet_title,
+    meet_content,
+    meet_date,
+    gpt_summary
+  ) values (
+    SEQ_TBL_MEETING_NO.NEXTVAL,
+    #{meetTitle},
+    #{meetContent},
+    #{meetDate},
+    #{gptSummary}
+  )
+</insert>
 
 </mapper>

@@ -87,7 +87,7 @@ function MeetingList({ meetings, setMeetings, setTab, selected, setSelected, scr
             className={`meeting-list-item${selected && selected.id === m.id ? ' selected' : ''}`}
             onClick={() => setSelected(m)}
           >
-            <b>{m.title}</b> <span style={{ color: '#888', fontSize: '0.95em' }}>({m.date})</span><br />
+            <b className="meeting-title">{m.title}</b> <span className="meeting-date">({m.date})</span><br />
             <span>
               태그: {m.tags && m.tags.length > 0 ? m.tags.map((tag, idx) => (
                 <React.Fragment key={tag}>
@@ -98,7 +98,6 @@ function MeetingList({ meetings, setMeetings, setTab, selected, setSelected, scr
                         className="meeting-tag-remove"
                         onClick={e => { e.stopPropagation(); handleRemoveTag(m.id, tag); }}
                         title="태그 삭제"
-                        style={{ marginLeft: 2, color: '#888', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1em' }}
                       >×</button>
                     )}
                   </span>

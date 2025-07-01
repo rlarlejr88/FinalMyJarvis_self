@@ -11,11 +11,8 @@ public class Meeting {
 	
 	private String meetingNo;
 	private String memberNo;
-	private String clientNo;
-	private String compCd;
 	private String meetTitle;
 	private String meetContent;
-	private String meetingDate;
+	private String meetDate;
 	private String gptSummary;
-
 }
