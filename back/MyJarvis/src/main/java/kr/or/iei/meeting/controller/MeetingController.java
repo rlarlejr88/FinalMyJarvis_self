@@ -1,13 +1,10 @@
 package kr.or.iei.meeting.controller;
 
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import kr.or.iei.common.model.dto.ResponseDTO;
@@ -18,37 +15,63 @@ import kr.or.iei.meeting.model.service.MeetingService;
 @CrossOrigin("*")
 @RequestMapping("/api/meetings")
 public class MeetingController {
-	
-     @Autowired
-     private MeetingService service;
-     
-     // 회의록 등록
-     @PostMapping
-     public ResponseEntity<ResponseDTO> insertMeeting(@ModelAttribute Meeting meeting){
-    	 ResponseDTO res = new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR, "등록 중, 에러가 발생했습니다.!!", false, "error");
-    	 
-    	 try {
-    		 
-    		 meeting.setMemberNo("1"); // ⭐ 테스트용 memberNo 하드코딩
-    		 int result = service.insertMeeting(meeting);
-    		 
-    		 if(result > 0) {
-    			 res = new ResponseDTO(HttpStatus.OK, "회의록 등록 완료", true, "success");
-    		 }else {
-    			res = new ResponseDTO(HttpStatus.OK, "등록 중, 오류 발생", false, "error"); 
-    		 }
-    	 }catch(Exception e) {
-    		 e.printStackTrace();
-    	 }
-    	 
-    	 return new ResponseEntity<ResponseDTO>(res, res.getHttpStatus());
-     }
-     
-     // 회의록 수정
-     
-     // 회의 내용 요약 저장
-     
-     // 회의 태그 저장
-     
-     
+	@Autowired
+	private MeetingService service;
+
+	// 회의록 등록
+	@PostMapping
+	public ResponseEntity<ResponseDTO> insertMeeting(@ModelAttribute Meeting meeting,
+			@RequestParam(value = "file", required = false) MultipartFile file) {
+
+		int result = service.insertMeeting(meeting);
+		if (result > 0) {
+			return ResponseEntity.ok(new ResponseDTO(HttpStatus.OK, "회의록 등록 완료", true, null));
+		} else {
+			return ResponseEntity.ok(new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR, "등록 실패", false, null));
+		}
+	}
+
+	// 회의록 전체 조회
+	@GetMapping
+	public ResponseEntity<ResponseDTO> getAllMeetings() {
+		List<Meeting> meetings = service.getAllMeetings();
+		return ResponseEntity.ok(new ResponseDTO(HttpStatus.OK, "회의록 목록 조회", meetings, "success"));
+	}
+
+	// 회의록 수정
+	@PutMapping
+	public ResponseEntity<ResponseDTO> updateMeeting(@RequestBody Meeting meeting) {
+
+		// 디버깅용: 받은 meeting 객체를 콘솔에 출력 // 확인 후, 삭제 코드
+		System.out.println(">> 받은 meeting = " + meeting); // 값 찍어보기!
+
+		int result = service.updateMeeting(meeting);
+		if (result > 0) {
+			return ResponseEntity.ok(new ResponseDTO(HttpStatus.OK, "회의록 수정 완료", true, null));
+		} else {
+			return ResponseEntity.ok(new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR, "수정 실패", false, null));
+		}
+	}
+
+	// 회의 내용만 수정하는 API 엔드포인트 추가
+	@PutMapping("/content")
+	public ResponseEntity<ResponseDTO> updateMeetingContent(@RequestBody Meeting meeting) {
+		int result = service.updateMeetingContent(meeting);
+		if (result > 0) {
+			return ResponseEntity.ok(new ResponseDTO(HttpStatus.OK, "회의 내용 수정 완료", true, null));
+		} else {
+			return ResponseEntity.ok(new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR, "수정 실패", false, null));
+		}
+	}
+
+	// 회의록 삭제
+	@DeleteMapping("/{meetingNo}")
+	public ResponseEntity<ResponseDTO> deleteMeeting(@PathVariable String meetingNo) {
+		int result = service.deleteMeeting(meetingNo);
+		if (result > 0) {
+			return ResponseEntity.ok(new ResponseDTO(HttpStatus.OK, "회의록 삭제 완료", true, null));
+		} else {
+			return ResponseEntity.ok(new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR, "삭제 실패", false, null));
+		}
+	}
 }
