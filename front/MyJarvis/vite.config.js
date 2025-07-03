@@ -5,7 +5,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/api': 'http://localhost' // Spring 서버가 포트 80이면 그대로
+      '/api': 'http://localhost:80' // Spring 서버가 포트 80이면 그대로
     }
   }
 });

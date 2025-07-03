@@ -11,9 +11,6 @@
         <result property="meetDate" column="MEET_DATE"/>
         <result property="gptSummary" column="GPT_SUMMARY"/>
     </resultMap>
-    
-    
-
     <!-- 회의록 등록 -->
     <insert id="insertMeeting" parameterType="Meeting">
         insert into tbl_meeting (

@@ -262,14 +262,27 @@ function MeetingList({
                             수정
                           </button>
                           <button
-                            className="meeting-detail-delete-btn"
-                            style={{ marginLeft: 8 }}
-                            onClick={(e) => {
+
+                            className="meeting-detail-delete-btn meeting-detail-delete-btn-margin"
+                            onClick={async (e) => {
                               e.stopPropagation();
                               if (window.confirm("정말 삭제하시겠습니까?")) {
-                                setMeetings((prev) =>
-                                  prev.filter((mm) => mm.id !== m.id)
-                                );
+                                try {
+                                  const res = await fetch(
+                                    `/api/meetings/${m.id}`,
+                                    { method: "DELETE" }
+                                  );
+                                  if (res.ok) {
+                                    setMeetings((prev) =>
+                                      prev.filter((mm) => mm.id !== m.id)
+                                    );
+                                    alert("Delete!!");
+                                  } else {
+                                    alert("삭제 실패(서버)");
+                                  }
+                                } catch (e) {
+                                  alert("삭제 실패(네트워크)");
+                                }
                               }
                             }}
                           >

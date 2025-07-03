@@ -6,11 +6,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import kr.or.iei.meeting.model.dao.MeetingDao;
 import kr.or.iei.meeting.model.dto.Meeting;
+import kr.or.iei.common.util.GptUtil;
 
 @Service
 public class MeetingService {
     @Autowired
     private MeetingDao dao;
+    
+    @Autowired
+    private GptUtil gptUtil;
 
     @Transactional
     public int insertMeeting(Meeting meeting) {
@@ -23,11 +27,6 @@ public class MeetingService {
     }
     
     @Transactional
-    public int updateMeetingContent(Meeting meeting) {
-        return dao.updateMeetingContent(meeting);
-    }
-
-    @Transactional
     public int deleteMeeting(String meetingNo) {
         return dao.deleteMeeting(meetingNo);
     }
@@ -39,4 +38,8 @@ public class MeetingService {
     public List<Meeting> getAllMeetings() {
         return dao.selectAllMeetings();
     }
+    public String summarizeMeeting(String content) {
+        return gptUtil.summarize(content);
+    }
+    
 }
