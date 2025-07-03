@@ -30,7 +30,7 @@ function MeetingInsert({ setTab }) {
     formData.append('meetContent', content);
     formData.append('participants', participants);
 
-    formData.append('memberNo', '1'); // 회원 번호 임시 지정. - 추후 삭제 해야 됨.
+    // formData.append('memberNo', '1'); // 회원 번호 임시 지정. - 추후 삭제 해야 됨.
     if (file) formData.append('file', file);
 
     try {

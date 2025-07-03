@@ -12,6 +12,6 @@ public class AopLogger {
     // 모든 Service의 메소드 실행 전 로그 찍기
     @Before("execution(* kr.or.iei..service..*(..))")
     public void beforeServiceMethod(JoinPoint jp) {
-        System.out.println(">>> AOP LOG: " + jp.getSignature().toShortString());
+        System.out.println(">>> 서비스 메소드 확인,  AOP LOG: " + jp.getSignature().toShortString());
     }
 }
