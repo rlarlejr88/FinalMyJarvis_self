@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="kr.or.iei.meeting.model.dao.MeetingDao">
+
+    <!-- 회의록 등록 -->
+    <insert id="insertMeeting" parameterType="Meeting">
+        insert into tbl_meeting (
+            meeting_no,
+            member_no,
+            meet_title,
+            meet_content,
+            meet_date,
+            gpt_summary
+        ) values (
+            SEQ_TBL_MEETING_NO.NEXTVAL,
+            #{memberNo},
+            #{meetTitle},
+            #{meetContent},
+            #{meetDate},
+            #{gptSummary}
+        )
+    </insert>
+
+    <!-- 회의록 수정 -->
+    <update id="updateMeeting" parameterType="Meeting">
+        update tbl_meeting
+        set meet_title = #{meetTitle},
+            meet_content = #{meetContent},
+            meet_date = #{meetDate},
+            gpt_summary = #{gptSummary}
+        where meeting_no = #{meetingNo}
+    </update>
+
+    <!-- 회의록 삭제 -->
+    <delete id="deleteMeeting" parameterType="String">
+        delete from tbl_meeting where meeting_no = #{meetingNo}
+    </delete>
+
+  
+    <!-- 회의록 전체 조회 -->
+    <select id="selectAllMeetings" resultType="kr.or.iei.meeting.model.dto.Meeting">
+        select * from tbl_meeting order by meeting_no desc
+    </select>
+
+</mapper>

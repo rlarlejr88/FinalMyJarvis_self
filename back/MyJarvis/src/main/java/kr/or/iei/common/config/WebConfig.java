@@ -1,32 +1,34 @@
 package kr.or.iei.common.config;
 
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import jakarta.servlet.Filter;
-import kr.or.iei.common.filter.EncodingFilter; //위 1번 클래스
+import kr.or.iei.common.filter.EncodingFilter;
+import kr.or.iei.common.filter.JwtFilter;
 
-@Configuration // import org.springframework.context.annotation.Configuration;
-public class WebConfig implements WebMvcConfigurer { // import
-														// org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+@Configuration // 설정 파일임을 알려주는 어노테이션
+public class WebConfig implements WebMvcConfigurer {
 
-	@Bean // 컨테이너에 Bean으로 등록
-	public FilterRegistrationBean<Filter> EncodingFilter() {
-
-		FilterRegistrationBean<Filter> filterRegistrationBean = new FilterRegistrationBean<>();
-		filterRegistrationBean.setFilter(new EncodingFilter()); // 등록할 필터 클래스
-		filterRegistrationBean.setOrder(1); // 필터 순서 (낮을수록 우선순위 높음)
-		filterRegistrationBean.addUrlPatterns("/*"); // 필터를 적용할 url 패턴(모든 요청에 대해 필터 동작)
-
-		return filterRegistrationBean;
-	}
-	
-	 @Bean
-		public BCryptPasswordEncoder bCrypt() {
-			return new BCryptPasswordEncoder();
-		}
-
+    // 인코딩 필터 등록 (모든 요청 UTF-8 처리)
+    @Bean
+    public FilterRegistrationBean<Filter> encodingFilter() {
+        FilterRegistrationBean<Filter> filterReg = new FilterRegistrationBean<>();
+        filterReg.setFilter(new EncodingFilter());         // 등록할 필터 클래스
+        filterReg.setOrder(1);                             // 필터 실행 순서
+        filterReg.addUrlPatterns("/*");                    // 모든 요청에 대해 필터 적용
+        return filterReg;
+    }
+    
+    // JWT 필터
+    @Bean
+    public FilterRegistrationBean<Filter> jwtFilter(JwtFilter jwtFilter) {
+        FilterRegistrationBean<Filter> filterReg = new FilterRegistrationBean<>();
+        filterReg.setFilter(jwtFilter);
+        filterReg.setOrder(2); // Encoding 필터 이후 실행
+        filterReg.addUrlPatterns("/*");
+        return filterReg;
+    }
 }
