@@ -69,7 +69,7 @@ public class MeetingController {
 	@PostMapping("/summary")
 	public ResponseEntity<ResponseDTO> summarizeMeeting(@RequestBody Meeting meeting) {
 		try {
-			String summary = service.summarizeMeeting(meeting.getContent());
+			String summary = service.summarizeMeeting(meeting.getMeetContent());
 			return ResponseEntity.ok(new ResponseDTO(HttpStatus.OK, "회의록 요약 성공", summary, "success"));
 		} catch (Exception e) {
 			return ResponseEntity.ok(new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR, "요약 실패", null, "fail"));
