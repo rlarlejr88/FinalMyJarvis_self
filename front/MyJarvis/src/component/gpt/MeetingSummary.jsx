@@ -11,22 +11,22 @@ function MeetingSummary({ content }) {
     setError("");
     setSummary("");
     try {
-      const res = await fetch("/api/gpt/summary", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setSummary(data.summary || "");
-      } else {
-        setError("요약 실패 (서버 오류)");
-      }
-    } catch (e) {
-      setError("요약 실패 (네트워크 오류)");
-    }
-    setLoading(false);
-  };
+    const res = await fetch("/api/meetings/summary", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ meetContent: content }),
+    });
+    const data = await res.json();
+    
+    console.log("요약 API 응답:", data); // 👈 실제 응답 구조 확인!
+    
+    if (data.resData) setSummary(data.resData);
+    else setError("요약 실패(응답 없음)");
+  } catch (e) {
+    setError("요약 실패(네트워크 오류)");
+  }
+  setLoading(false);
+};
 
   return (
     <div className="meeting-summary-container">

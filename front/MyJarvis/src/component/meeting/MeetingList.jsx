@@ -31,6 +31,7 @@ function MeetingList({
     async function fetchMeetings() {
       try {
         const res = await fetch("/api/meetings");
+        // 500 에러 발생 시, 백엔드 API의 문제일 수 있습니다.
         if (res.ok) {
           const result = await res.json();
           const rawMeetings = result.resData;
@@ -52,12 +53,19 @@ function MeetingList({
 
           setLocalMeetings(data);
           if (setMeetings) setMeetings(data); // 상위에도 동기화
+        } else {
+          // 서버에서 에러 응답 시 메시지 출력
+          const errorText = await res.text();
+          console.error("서버 오류:", res.status, errorText);
+          alert("회의 목록을 불러오는 중 서버 오류가 발생했습니다.");
         }
       } catch (e) {
-        // 에러 처리
+        // 네트워크 에러 등
+        console.error("네트워크 오류:", e);
+        alert("회의 목록을 불러오는 중 네트워크 오류가 발생했습니다.");
       }
     }
-    fetchMeetings();
+    fetchMeetings(); // <-- 이 부분에서 500 에러가 발생 (백엔드 API 점검 필요)
   }, []);
 
   // const filtered = localMeetings.filter(m => m.memberNo === myMemberNo);
