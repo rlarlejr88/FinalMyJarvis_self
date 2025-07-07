@@ -1,6 +1,8 @@
 package kr.or.iei.meeting.controller;
 
 import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -53,7 +55,6 @@ public class MeetingController {
 		}
 	}
 
-
 	// 회의록 삭제
 	@DeleteMapping("/{meetingNo}")
 	public ResponseEntity<ResponseDTO> deleteMeeting(@PathVariable String meetingNo) {
@@ -64,17 +65,31 @@ public class MeetingController {
 			return ResponseEntity.ok(new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR, "삭제 실패", false, null));
 		}
 	}
-	
-	// 회의록 요약
+
+//	// 회의록 요약
+//	@PostMapping("/summary")
+//	public ResponseEntity<ResponseDTO> summarizeMeeting(@RequestBody Meeting meeting) {
+//		try {
+//			String summary = service.summarizeMeeting(meeting.getMeetContent());
+//			return ResponseEntity.ok(new ResponseDTO(HttpStatus.OK, "회의록 요약 성공", summary, "success"));
+//		} catch (Exception e) {
+//			return ResponseEntity.ok(new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR, "요약 실패", null, "fail"));
+//		}
+//	}
+
 	@PostMapping("/summary")
-	public ResponseEntity<ResponseDTO> summarizeMeeting(@RequestBody Meeting meeting) {
+	public ResponseEntity<ResponseDTO> summarizeMeeting(@RequestBody Meeting meeting,
+			@RequestHeader Map<String, Object> headers) {
+		System.out.println("Incoming headers: " + headers);
 		try {
+<<<<<<< HEAD
 			String summary = service.summarizeMeeting(meeting.getMeetContent());
+=======
+			String summary = service.summarizeMeeting(meeting); // 전체 meeting 전달!
+>>>>>>> main
 			return ResponseEntity.ok(new ResponseDTO(HttpStatus.OK, "회의록 요약 성공", summary, "success"));
 		} catch (Exception e) {
 			return ResponseEntity.ok(new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR, "요약 실패", null, "fail"));
 		}
 	}
-	
-	
 }
