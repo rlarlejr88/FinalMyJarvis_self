@@ -82,11 +82,8 @@ public class MeetingController {
 			@RequestHeader Map<String, Object> headers) {
 		System.out.println("Incoming headers: " + headers);
 		try {
-<<<<<<< HEAD
-			String summary = service.summarizeMeeting(meeting.getMeetContent());
-=======
+
 			String summary = service.summarizeMeeting(meeting); // 전체 meeting 전달!
->>>>>>> main
 			return ResponseEntity.ok(new ResponseDTO(HttpStatus.OK, "회의록 요약 성공", summary, "success"));
 		} catch (Exception e) {
 			return ResponseEntity.ok(new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR, "요약 실패", null, "fail"));

@@ -8,7 +8,7 @@
 */
 
 import React, { useState } from 'react';
-// import './ContractList.css';
+import './ContractList.css';
 
 const initialContracts = [
   {
@@ -45,8 +45,8 @@ function ContractList() {
 
   return (
     <div className="contractlist-container">
-      {tab === 'week' && <h3 style={{marginTop:'16px'}}>주간 일정</h3>}
-      {tab === 'day' && <h3 style={{marginTop:'16px'}}>일간 일정</h3>}
+      {tab === 'week' && <h3 className="contractlist-title">주간 일정</h3>}
+      {tab === 'day' && <h3 className="contractlist-title">일간 일정</h3>}
       <ul className="contractlist-list">
         {contracts.map(contract => (
           <li key={contract.id} className={`contractlist-item status-${contract.status}`}>

@@ -61,7 +61,7 @@ function DailyWorkList() {
         </label>
       </div>
       <div className="dailywork-progress">
-        <div className="dailywork-progress-bar" style={{ width: `${progress}%` }} />
+        <div className="dailywork-progress-bar" data-progress={progress} />
         <span className="dailywork-progress-text">진행률: {progress}%</span>
       </div>
       <ul className="dailywork-list">

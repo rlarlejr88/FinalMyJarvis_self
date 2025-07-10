@@ -9,17 +9,9 @@ public class GptService {
     private GptClient gptClient;
 
     public String summarize(String content) {
-<<<<<<< HEAD
-        String prompt = "다음 회의록을 5줄 이내로 요약해줘: " + content;
-        GptResponseDto response = gptClient.requestSummary(prompt);
-        return response != null ? response.getSummary() : "요약 실패";
-    }
-}
-=======
     	
         String prompt = content; // HuggingFace 프롬프트 없이 텍스트만 전달
         GptResponseDto response = gptClient.requestSummary(prompt);
         return response != null ? response.getSummary() : "요약 실패";
     }
 }
->>>>>>> main
