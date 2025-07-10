@@ -2,28 +2,43 @@ package kr.or.iei.common.filter;
 
 import java.io.IOException;
 
-import jakarta.servlet.*;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.servlet.HandlerMapping;
 
 import kr.or.iei.common.util.JwtUtils;
+import kr.or.iei.common.annotation.NoTokenCheck;
+
+import java.util.Map;
 
 @Component
-public class JwtFilter implements Filter {
+public class JwtFilter extends OncePerRequestFilter {
 
     @Autowired
     private JwtUtils jwtUtils;
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-            throws IOException, ServletException {
-
-        HttpServletRequest req = (HttpServletRequest) request;
-        HttpServletResponse res = (HttpServletResponse) response;
+    protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
+            throws ServletException, IOException {
+        // HandlerMethod를 통해 어노테이션 확인
+        Object handler = req.getAttribute(HandlerMapping.BEST_MATCHING_HANDLER_ATTRIBUTE);
+        if (handler instanceof HandlerMethod) {
+            HandlerMethod handlerMethod = (HandlerMethod) handler;
+            // 메서드 또는 클래스에 NoTokenCheck가 붙어 있으면 우회
+            if (handlerMethod.getMethodAnnotation(NoTokenCheck.class) != null ||
+                handlerMethod.getBeanType().getAnnotation(NoTokenCheck.class) != null) {
+                chain.doFilter(req, res);
+                return;
+            }
+        }
 
         String authHeader = req.getHeader("Authorization");
 
@@ -36,11 +51,9 @@ public class JwtFilter implements Filter {
                 res.setStatus(((HttpStatus) result).value());
                 return;
             }
-
-            // 검증 완료 후, 사용자 정보 request에 저장 가능 (선택 사항)
-            // req.setAttribute("loginMember", result);
+            // req.setAttribute("loginMember", result); // 필요시 사용자 정보 저장
         }
 
-        chain.doFilter(request, response);
+        chain.doFilter(req, res);
     }
 }
