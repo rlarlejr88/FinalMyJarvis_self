@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.servlet.http.HttpServletRequest;
 import kr.or.iei.common.model.dto.ResponseDTO;
 import kr.or.iei.meeting.model.dto.Meeting;
 import kr.or.iei.meeting.model.service.MeetingService;
@@ -23,8 +24,11 @@ public class MeetingController {
 	// 회의록 등록
 	@PostMapping
 	public ResponseEntity<ResponseDTO> insertMeeting(@ModelAttribute Meeting meeting,
-			@RequestParam(value = "file", required = false) MultipartFile file) {
+			@RequestParam(value = "file", required = false) MultipartFile file, HttpServletRequest req) {
 
+		String memberNo = (String) req.getAttribute("memberNo");
+		meeting.setMemberNo(memberNo); // memberNo 설정
+		
 		int result = service.insertMeeting(meeting);
 		if (result > 0) {
 			return ResponseEntity.ok(new ResponseDTO(HttpStatus.OK, "회의록 등록 완료", true, null));

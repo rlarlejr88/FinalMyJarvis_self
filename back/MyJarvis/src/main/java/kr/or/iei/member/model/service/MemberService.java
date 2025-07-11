@@ -55,8 +55,8 @@ public class MemberService {
   		}
   		
   		if(encoder.matches(member.getMemberPw(), chkMember.getMemberPw())) {
-  			//엄호화 비밀번호 일치한 경우
-  			String accessToken = jwtUtils.createAccessToken(chkMember.getMemberId(), chkMember.getMemberStatus());
+  			//암호화 비밀번호 일치한 경우
+  			String accessToken = jwtUtils.createAccessToken(chkMember, chkMember.getMemberStatus()); // Member 객체로 변경
   			String refreshToken = jwtUtils.createRefreshToken(chkMember.getMemberId(), chkMember.getMemberStatus());
   		
   			

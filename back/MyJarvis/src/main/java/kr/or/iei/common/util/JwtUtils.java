@@ -28,7 +28,7 @@ public class JwtUtils {
 	
 	
 	//AccessToken 발급 메소드
-	public String createAccessToken(String memberId, String string) {
+	public String createAccessToken(Member member, String memberLevel) { // 파라미터명 명확화
 		//1. 내부에서 사용할 방식으로, 정의한 key 변환
 		SecretKey key = Keys.hmacShaKeyFor(jwtSecretKey.getBytes());
 		
@@ -44,8 +44,9 @@ public class JwtUtils {
 								 .issuedAt(startTime)					//시작시간
 								 .expiration(expireTime)				//만료시간
 								 .signWith(key)							//암호화 서명
-								 .claim("memberId", memberId)			//토큰 포함 정보(key ~ value 형태)
-								 .claim("memberLevel", string)		//토큰 포함 정보(key ~ value 형태)
+								 .claim("memberId", member.getMemberId())			//토큰 포함 정보(key ~ value 형태)
+								 .claim("memberLevel", memberLevel)		//토큰 포함 정보(key ~ value 형태)
+								 .claim("memberNo", member.getMemberNo())  // 토큰에 memeberno 추가
 								 .compact();							//생성
 		
 		return accessToken;
@@ -85,18 +86,22 @@ public class JwtUtils {
 			SecretKey key = Keys.hmacShaKeyFor(jwtSecretKey.getBytes());
 			
 			//2. 토큰 해석
-			Claims claims = (Claims) Jwts.parser()
-										 .verifyWith(key)	//해석에 필요한 Key
-										 .build()
-										 .parse(token)		//해석 대상 토큰
-										 .getPayload();
+			Claims claims = Jwts.parserBuilder()
+				.setSigningKey(key)	//해석에 필요한 Key
+				.build()
+				.parseClaimsJws(token)
+				.getBody();
 			
 			//3. 토큰에서 데이터 추출
 			String memberId = (String) claims.get("memberId");
-			//int memberLevel = (int) claims.get("memberLevel");
-			
 			m.setMemberId(memberId);
-			//m.setMemberLevel(memberLevel);
+			
+			// 로그인 이후. 토큰으로 검증
+			// memberNo 타입에 따라 변환 (String 또는 Integer)
+			Object memberNoObj = claims.get("memberNo");
+			if (memberNoObj != null) {
+				m.setMemberNo(memberNoObj.toString()); // memberNo가 String이 아니면 toString으로 변환
+			}
 			
 		}catch(SignatureException e) { // 발급 토큰과 요청 토큰 불일치
 			return HttpStatus.UNAUTHORIZED; //401 코드 
@@ -106,4 +111,15 @@ public class JwtUtils {
 		
 		return m;
 	}
+	
+	/** 토큰에서 memberNo(subject) 꺼내기 */
+	public String getMemberNo(String token) {
+	    Claims claims = Jwts.parserBuilder()
+	        .setSigningKey(Keys.hmacShaKeyFor(jwtSecretKey.getBytes())) // SECRET_KEY -> jwtSecretKey로 변경
+	        .build()
+	        .parseClaimsJws(token)
+	        .getBody();
+	    return claims.getSubject();
+	}
+
 }

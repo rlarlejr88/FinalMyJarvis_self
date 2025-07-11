@@ -40,7 +40,8 @@
   <select id="memberLogin"
   parameterType="string"
   resultType="Member">
-  	select member_id as memberId,
+  	select member_no as memberNo, <!-- member_no가 null로 입력되는거 방지(로그인하고 나서) -->
+  		   member_id as memberId,
   		   member_pw as memberPw,
   		   member_status as memberStatus
   	  from tbl_member
