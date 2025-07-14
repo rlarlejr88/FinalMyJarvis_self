@@ -5,8 +5,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import java.util.*;
 
-@Component
-public class GptClient {
 
 	// 추후 URL 변경으로 영어가 아닌 한글 요약을 요청할 수 있도록 변경 예정
 	private static final String HUGGINGFACE_URL =

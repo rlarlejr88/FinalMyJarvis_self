@@ -12,4 +12,14 @@ import lombok.NoArgsConstructor;
 public class GptResponseDto {
     private String summary;
 
-}
+<<<<<<< HEAD
+
+    public GptResponseDto(String summary) {
+        this.summary = summary;
+    }
+    public String getSummary() {
+        return summary;
+    }
+    public void setSummary(String summary) {
+        this.summary = summary;
+    }
