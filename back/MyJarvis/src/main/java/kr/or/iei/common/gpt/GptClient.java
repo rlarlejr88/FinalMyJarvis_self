@@ -5,8 +5,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class GptClient {
     public GptResponseDto requestSummary(String prompt) {
-        // TODO: Replace with actual API call logic
-        String dummySummary = "지피티 테스트 테스트.";
+
+        String dummySummary = "테스트 gpt 확인 테스트.";
         return new GptResponseDto(dummySummary);
     }
 }

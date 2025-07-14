@@ -15,6 +15,7 @@ import kr.or.iei.meeting.model.service.MeetingService;
 @CrossOrigin("*")
 @RequestMapping("/api/meetings")
 public class MeetingController {
+	
 	@Autowired
 	private MeetingService service;
 
@@ -42,8 +43,6 @@ public class MeetingController {
 	@PutMapping
 	public ResponseEntity<ResponseDTO> updateMeeting(@RequestBody Meeting meeting) {
 
-		// 디버깅용: 받은 meeting 객체를 콘솔에 출력 // 확인 후, 삭제 코드
-		System.out.println(">> 받은 meeting = " + meeting); // 값 찍어보기!
 
 		int result = service.updateMeeting(meeting);
 		if (result > 0) {

@@ -262,6 +262,7 @@ function MeetingList({
                             수정
                           </button>
                           <button
+
                             className="meeting-detail-delete-btn meeting-detail-delete-btn-margin"
                             onClick={async (e) => {
                               e.stopPropagation();

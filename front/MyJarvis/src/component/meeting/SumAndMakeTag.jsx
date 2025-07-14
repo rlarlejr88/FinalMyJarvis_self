@@ -46,7 +46,7 @@ function SumAndMakeTag({ initialContent = '', onSaveTags }) {
   return (
     <div className="gpt-summary-tag">
       <div className="gpt-summary-section">
-        <h3>회의 내용 GPT 요약 및 태그</h3>
+        <h3>회의 내용 GPT 요약</h3>
         <textarea
           placeholder="회의 내용을 입력하세요"
           value={content}
