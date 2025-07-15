@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="kr.or.iei.schedule.model.dao.ScheduleDao">
+
+	<!-- 일정 등록 -->
+	<insert id="insertSchedule" parameterType="kr.or.iei.schedule.model.dto.Schedule">
+		INSERT INTO tbl_schedule (
+			schedule_no, member_no, contract_no, status_code, schedule_title, reg_date, schedule_content, schedule_progress, schedule_color
+		) VALUES (
+			seq_schedule_no.nextval, #{memberNo}, #{contractNo}, #{statusCode}, #{scheduleTitle}, sysdate, #{scheduleContent}, #{scheduleProgress}, #{scheduleColor}
+		)
+	</insert>
+	
+	<!-- 등록된 일정 조회 -->
+	<select id="selectScheduleList" resultType="kr.or.iei.schedule.model.dto.Schedule">
+		SELECT * FROM tbl_schedule WHERE member_no = #{memberNo}
+	</select>
+
+	<!-- 일정 수정 -->
+	<update id="updateSchedule" parameterType="kr.or.iei.schedule.model.dto.Schedule">
+		UPDATE tbl_schedule
+		SET contract_no = #{contractNo}, status_code = #{statusCode}, schedule_title = #{scheduleTitle},
+			schedule_content = #{scheduleContent}, schedule_progress = #{scheduleProgress}, schedule_color = #{scheduleColor}
+		WHERE schedule_no = #{scheduleNo}
+	</update>
+
+	<!-- 일정 삭제 -->
+	<delete id="deleteSchedule" parameterType="string">
+		DELETE FROM tbl_schedule WHERE schedule_no = #{scheduleNo}
+	</delete>
+</mapper>

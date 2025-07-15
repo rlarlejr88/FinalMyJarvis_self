@@ -1,0 +1,261 @@
+/* 전체 레이아웃을 좌우 2단 패널로 구성 */
+.memberUpd-container {
+  display: flex;
+  height: 100vh; /* 화면 전체 높이 */
+  width: 100%;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* 왼쪽 영역 - 회원 정보 수정 폼 */
+.left-panel {
+  flex: 1;
+  padding: 40px 60px;
+  background-color: #fff;
+}
+
+
+/* 회원 수정 제목 */
+.memberUpd-text {
+  font-size: 40px;
+  color: black;
+  margin-left: 0;      /* 왼쪽 여백 제거 */
+  padding-left: 200px;
+  text-align: left;
+}
+
+/* 오른쪽 영역 - 로고 및 푸터 */
+.right-panel {
+  flex: 1;
+  background: linear-gradient(90deg, #5a50f0, #9c78f6); /* 보라-보라 그라데이션 */
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 60px;
+  position: relative;
+  box-sizing: border-box;
+}
+
+/* 오른쪽 내부 콘텐츠 (로고, 링크 등) */
+.right-content {
+  text-align: center;
+}
+
+/* 로고 이미지 */
+.right-content .logo {
+  width: 700px;
+  height: auto;
+  margin-bottom: 30px;
+}
+
+/* 푸터 링크 그룹 */
+.footer-links {
+  display: flex;
+  justify-content: space-around;
+  font-size: 0.9rem;
+  opacity: 0.85;
+}
+
+/* 반응형 - 화면 작아질 경우 세로 정렬로 변경 */
+@media (max-width: 900px) {
+  .memberUpd-container {
+    flex-direction: column;
+  }
+  .left-panel, .right-panel {
+    flex: none;
+    width: 100%;
+    height: 50vh;
+    border-radius: 0;
+  }
+  .right-panel {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+}
+
+/* 폼 전체 영역 */
+.memberUpd-form {
+  width: 400px;
+  margin: 30px auto;
+  padding: 20px 40px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.05);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* 폼 내부 타이틀 텍스트 */
+.memberUpd-form .text {
+  font-size: 1.8rem;
+  font-weight: 00;
+  margin-bottom: 15px;
+}
+
+/* 입력 필드 블록 전체 */
+.input-wrap {
+  margin-bottom: 18px;
+  align-self: flex-start; /* ✅ 가로 가운데 정렬 해제하고 왼쪽에 붙이기 */
+  
+}
+
+/* 각 입력 라벨 스타일 */
+.input-title label {
+  display: block;
+  margin: 0 0 6px 0;     /* 위, 오른쪽, 아래, 왼쪽 */
+  color: black;
+  font-size: 0.9rem;
+  text-align: left;
+  padding-left: 200px;
+}
+.memberUpd-p{
+   text-align: center; 
+  
+}
+
+
+/* 입력 필드 (텍스트 및 비밀번호 공통) */
+.memberUpd-item input[type="text"],
+.memberUpd-item input[type="password"] {
+  width: 50%;
+  padding: 10px 14px;
+  border: 1.5px solid #ccc;
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+  
+}
+.memberUpd-item {
+  display: flex;
+  justify-content: center; /* ✅ input 중앙 정렬 */
+}
+
+
+/* 입력 필드 포커스 시 */
+.memberUpd-item input[type="text"]:focus,
+.memberUpd-item input[type="password"]:focus {
+  border-color: #3f51b5;
+  outline: none;
+}
+
+/* 안내 텍스트 */
+.input-wrap p {
+  margin-top: 6px;
+  font-size: 0.8rem;
+  color: #777777;
+}
+
+/* 수정/취소 버튼 구역 */
+.button-zone {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 25px;
+}
+
+/* 수정/취소 버튼 공통 */
+.memberUpd-second {
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.25s ease;
+  background: linear-gradient(90deg, #5a50f0, #9c78f6);
+}
+
+/* 첫 번째 버튼: 수정 */
+.memberUpd-second:first-child {
+  background-color: #3f51b5;
+  color: #fff;
+}
+
+/* 두 번째 버튼: 취소 */
+.memberUpd-second:last-child {
+  background-color: #e0e0e0;
+  color: #fff;
+}
+
+/* 🔐 비밀번호 확인 페이지 전용 컨테이너 */
+.memberUpd-container2 {
+  display: flex;
+  justify-content: center;  /* 가로 가운데 */
+  align-items: center;      /* 세로 가운데 */
+  height: 90vh;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* 비밀번호 확인 입력 박스 */
+.form-box2 {
+  width: 100%;
+  max-width: 420px;
+  background: white;
+  padding: 40px;
+  border-radius: 20px;
+  box-sizing: border-box;
+  text-align: left;
+}
+
+/* 비밀번호 확인 타이틀 */
+.form-title2 {
+  font-size: 28px;
+  font-weight: 700;
+  color: black;
+  margin-bottom: 8px;
+}
+
+/* 비밀번호 확인 부제목 */
+.form-subtitle2 {
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 24px;
+}
+
+/* 라벨 */
+.input-title2 label {
+  display: block;
+  font-weight: 600;
+  color: black;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+/* 비밀번호 입력 인풋 */
+.pw-check-input input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  font-size: 14px;
+  transition: 0.3s;
+}
+
+/* 포커스 효과 */
+.pw-check-input input:focus {
+  border-color: #6366f1;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+/* 비밀번호 확인 버튼 영역 */
+.button-zone1 {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+/* 비밀번호 확인 / 취소 버튼 공통 */
+.memberUpd-primary {
+  flex: 1;
+  padding: 12px 0;
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: 0.3s ease;
+  color: white;
+  background: linear-gradient(90deg, #5a50f0, #9c78f6);
+}

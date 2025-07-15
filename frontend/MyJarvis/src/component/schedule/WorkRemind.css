@@ -1,0 +1,182 @@
+/* --- 전체 레이아웃 --- */
+.content-wrap {
+    background-color: white; 
+    border-radius: 12px;    
+    border: 1px solid #e9eef5;        
+    margin-top: -24px;    /* 부모의 pt-6 (24px) 만큼 당기기 */
+    margin-bottom: -12px; /* 부모의 pb-3 (12px) 만큼 당기기 */    
+    width: calc(100%);  
+    height: calc(100% + 36px);
+    padding: 32px;   
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* 카드 사이의 간격 */   
+}
+
+.content-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+}
+
+.content-title { 
+    font-size: 26px; 
+    font-weight: 700; 
+}
+
+.content-subtitle { 
+    font-size: 14px; 
+    color: #888; 
+}
+
+/* --- 필터 및 액션 카드 --- */
+.filter-card {
+    border: 1px solid #f0f0f0; /* 연한 회색 선 */
+    border-radius: 12px;
+    padding: 12px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.filter-controls {
+    display: flex;
+    align-items: center;
+    gap: 24px; /* 각 필터 요소 사이의 간격 */
+}
+
+/* 검색창 스타일 */
+.search-box { position: relative; }
+.search-box > .material-symbols-outlined {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #aaa;
+    font-size: 16px;
+}
+.search-box > input {    
+    padding-left: 40px; /* 왼쪽 아이콘 공간만 유지 */
+    height: 32px; /* 기준 높이로 설정 */
+    box-sizing: border-box; /* 패딩, 테두리를 높이에 포함 */
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    width: 250px;
+    font-size: 14px;
+}
+
+/* --- WorkRemind 스타일 --- */
+.workremind-container {
+    background-color: white;
+    border-radius: 12px;
+    border: 1px solid #e9eef5;
+    padding: 24px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+}
+
+.workremind-desc {
+  color: #888;
+  font-size: 0.95rem;
+  margin-bottom: 12px;
+  text-align: center;
+}
+.workremind-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.workremind-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border: 1px solid #f0f0f0;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    transition: all 0.3s ease;
+}
+.workremind-item:hover {
+    background-color: #e0e7ff;
+    border-color: #3b48ff;
+}
+.workremind-item.read {
+    opacity: 0.6;
+}
+.workremind-item-title {
+  flex: 1;
+  text-align: center;
+}
+.workremind-type {
+  font-weight: 600;
+  color: #2563eb;
+}
+.workremind-date {
+  margin-left: 12px;
+  color: #555;
+}
+.workremind-set {
+  margin-left: 10px;
+  color: #22c55e;
+  font-weight: 500;
+  font-size: 0.95em;
+}
+.remind-btn {
+  background: #fff;
+  border: 1px solid #2563eb;
+  color: #2563eb;
+  border-radius: 6px;
+  padding: 4px 12px;
+  cursor: pointer;
+}
+.workremind-edit {
+  margin-top: 10px;
+  background: #f1f5f9;
+  padding: 12px;
+  border-radius: 8px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.workremind-edit-row {
+  margin-bottom: 8px;
+}
+.workremind-edit-label {
+  margin-left: 16px;
+}
+.workremind-edit-input {
+  margin-left: 8px;
+}
+.workremind-edit-btns {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+.remind-btn.save {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  padding: 4px 16px;
+}
+.remind-btn.cancel {
+  background: #fff;
+  color: #2563eb;
+  border: 1px solid #2563eb;
+  padding: 4px 16px;
+}
+.workremind-read-btn {
+    background-color: #3b48ff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+.workremind-read-btn:hover {
+    background-color: #2c3ebf;
+}
