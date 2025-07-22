@@ -1,108 +1,65 @@
-/* 전체 body의 기본 설정 */
-body {
-  margin: 10; /* 기본 여백 */
-  background-color: #f4f7fe; /* 연한 회색 배경 (전체 페이지 배경) */
+/* 전체 마이페이지 카드 컨테이너 */
+.mypage-container {
+  @apply p-0 bg-white text-gray-800 rounded-xl flex flex-col gap-5 dark:bg-gray-900 dark:text-white;
+  font-family: 'Pretendard', sans-serif;
+  flex: 1;
+  min-height: 480px; /* 기존보다 살짝 키움 */
 }
 
-/* 마이페이지 전체 컨테이너 (카드 형태) */
+/* 제목 텍스트 */
+.page-title {
+  @apply text-base font-semibold text-gray-800 mb-2 px-4 dark:text-white;
+}
+
+/* 마이페이지 카드 내부 컨테이너 */
 .member-container {
-  max-width: 700px;              /* 중앙 카드 최대 너비 */
-  margin: 0 auto;                /* 좌우 가운데 정렬 */
-  padding: 30px 20px;            /* 내부 여백 */
-  background-color: white;       /* 배경 흰색 */
-  border-radius: 12px;           /* 테두리 둥글게 */
-  font-family: 'Noto Sans KR', sans-serif;
-  min-height: 60vh;              /* 최소 높이 확보 */
+  @apply max-w-[700px] mx-auto px-10 pt-10 pb-10 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-xl shadow-md;
+  font-family: 'Pretendard', sans-serif;
 }
 
-/* 마이페이지 정보 텍스트 박스 (회색 박스) */
+/* 사용자 정보 표시 박스 */
 .memberMain-item {
-  width: 200%;                   /* 부모 요소 기준 너비 2배 (좌우 정렬 대응) */
-  max-width: 380px;              /* 최대 너비 제한 */
-  padding: 10px 12px;            /* 내부 여백 */
-  border-radius: 8px;            /* 둥근 테두리 */
-  background-color: #f4f7fe;     /* 연한 회색 배경 */
-  box-sizing: border-box;
+  @apply w-full max-w-[380px] px-4 py-2 rounded-md bg-[#f4f7fe] dark:bg-gray-800 text-gray-800 dark:text-white box-border min-h-[40px];
 }
 
-/* 상단 "OOO님의 마이페이지" 타이틀 */
+/* 마이페이지 상단 제목 */
 .member-title {
-  font-weight: 700;
-  font-size: 20px;
-  text-align: center;
-  margin-bottom: 30px;
-  color: black;
+  @apply text-2xl font-bold text-center mb-9 text-black dark:text-white;
 }
 
-/* 마이페이지 정보 테이블 공통 스타일 */
-.tbl.my-info th, 
+/* 표 스타일 */
+.tbl.my-info th,
 .tbl.my-info td {
-  padding: 12px 15px;                /* 셀 내부 여백 */
-  border-bottom: 1px solid #e0e0e0;  /* 하단 구분선 */
-  vertical-align: middle;            /* 수직 가운데 정렬 */
+  @apply py-3 px-4 border-b border-gray-200 align-middle dark:border-gray-700;
 }
 
 /* 테이블 왼쪽 (th) 셀 스타일 */
 .tbl.my-info th {
-  width: 25%;
-  font-weight: 600;
-  color: black;
-  text-align: left;
+  @apply w-1/4 font-semibold text-gray-700 text-left dark:text-gray-200;
 }
 
-/* 테이블 오른쪽 (td) 셀의 내부 input-item div 스타일 (사용 안함 또는 백업) */
-.tbl.my-info td .input-item {
-  background-color: #f4f7fe;
-  padding: 10px 15px;
-  border-radius: 8px;
-  color: #222;
-  min-height: 40px;
-  display: flex;
-  align-items: center;
+/* 입력값 표시 스타일 */
+.input-item {
+  @apply bg-gray-50 text-gray-800 py-2 px-4 rounded-md text-sm flex items-center min-h-[40px] dark:bg-gray-800 dark:text-white;
 }
 
-/* 버튼들을 감싸는 영역 (수정하기 / 회원탈퇴) */
+/* 버튼 그룹 */
 .button {
-  display: flex;
-  justify-content: center;
-  align-items: center; /* 수직 가운데 정렬 */
-  gap: 30px;           /* 버튼 사이 간격 */
-  margin-top: 40px;
+  @apply flex justify-center items-center gap-6 mt-6;
 }
 
-/* 두 버튼에 공통 적용되는 스타일 */
-.btn-first, .btn-second {
-  padding: 12px 36px;
-  border-radius: 12px;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  border: none;
-  transition: background-color 0.3s ease;
-  text-decoration: none;
-  text-align: center;
-  user-select: none;
+/* 버튼 공통 */
+.btn-first,
+.btn-second {
+  @apply px-6 py-3 rounded-xl text-[15px] font-bold cursor-pointer text-center transition;
 }
 
-/* "수정하기" 버튼 (보라색 그라데이션) */
+/* 수정 버튼: 보라 그라데이션 */
 .btn-first {
-  background: linear-gradient(90deg, #5a50f0, #9c78f6);
-  color: white;
+  @apply text-sm font-bold text-white bg-gradient-to-r from-[#1E1BFF] to-[#7C3AED] hover:brightness-110;
 }
 
-/* "회원탈퇴" 버튼 (기본도 보라색이나 아래에서 override 됨) */
+/* 탈퇴 버튼: 회색 → 빨강으로 변화 + 다크모드 대응 */
 .btn-second {
-  background: linear-gradient(90deg, #5a50f0, #9c78f6);
-  color: white;
-}
-
-/* 회원탈퇴 버튼에만 적용되는 추가 스타일 (위의 보라색 배경을 override함) */
-.btn-second {
-  height: 47px;          /* 고정 높이로 버튼 정렬 안정화 */
-  font-weight: 700;
-  border-radius: 12px;
-  cursor: pointer;
-  background-color: red; /* 🔴 탈퇴 버튼은 빨간색으로 경고 강조 */
-  color: white;
-  line-height: 1;         /* 텍스트 수직 정렬 최적화 */
+  @apply text-sm font-bold text-white bg-gray-400 hover:bg-red-600 dark:bg-gray-700 dark:hover:bg-red-600;
 }

@@ -1,5 +1,5 @@
 // src/component/common/Header.jsx
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import DropdownMenu from "../../components/user/DropdownMenu";
 
@@ -18,6 +18,7 @@ function Header() {
 
   const handleSelect = (item) => {
     navigate(item.path);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     setIsOpen(false);
   };
 
@@ -42,14 +43,16 @@ function Header() {
   }, []);
 
   return (
-    <header
-      className={`top-0 left-0 w-full z-50 transition-all duration-300 ${
-        isScrolled ? "fixed bg-white shadow-md text-gray-800" : "absolute bg-transparent text-white"
-      }`}
+<header
+  className={`top-0 left-0 w-full z-50 transition-all duration-300 ${
+    isScrolled ? "fixed bg-white shadow-md text-gray-800" : "fixed bg-transparent text-white"
+  }`}
     >
       <div className="max-w-screen-xl mx-auto flex items-center justify-between px-6 py-4 relative">
         {/* MyJarvis 텍스트 */}
-        <h1 className="text-3xl font-black tracking-tight">MyJarvis</h1>
+          <Link to="/">
+            <h1 className="text-3xl font-black tracking-tight">MyJarvis</h1>
+          </Link>
 
         {/* 드롭다운 + 로그인 */}
         <div ref={dropdownRef} className="flex items-center space-x-3 relative">

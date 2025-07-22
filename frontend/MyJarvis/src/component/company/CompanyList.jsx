@@ -1,15 +1,17 @@
 import "./CompanyList.css";
-import axios from "axios";
 import { useEffect, useState } from "react";
 import PageNavi from "./companyCommon/PageNavi";
 import CompanyInsertModal from "./CompanyInsertModal";
 import createInstance from "../../axios/interceptor";
-
+import useUserStore from "../../store/useUserStore";
+import { useNavigate } from "react-router-dom";
 
 export default function CompanyList(){    
     
     const serverUrl = import.meta.env.VITE_BACK_SERVER;     //API 서버 주소 serverUrl에 저장    
     const axiosInstance = createInstance();                 //중요!! interceptor에서 만들어놓은 axios
+    const {loginMember} = useUserStore();
+
     const [companyList, setCompanyList] = useState([]);     //백엔드에서 받아온 데이터를 저장할   
     const [reqPage, setReqPage] = useState(1);              //요청 페이지    
     const [pageInfo, setPageInfo] = useState({});           //페이지 네비게이션    
@@ -24,7 +26,7 @@ export default function CompanyList(){
     
     useEffect(function(){
         //URL 뒤에 붙일 쿼리스트링(필터값을 포함하고 있음.)
-        const queryString = `?reqPage=${reqPage}&sortKey=${sortConfig.key}&sortDirection=${sortConfig.direction}&type=${filterType}&status=${filterStatus}&search=${searchTerm}`;
+        const queryString = `?reqPage=${reqPage}&sortKey=${sortConfig.key}&sortDirection=${sortConfig.direction}&type=${filterType}&status=${filterStatus}&search=${searchTerm}&memberId=${loginMember.memberId}`;
 
         let options = {};
         options.url = serverUrl + "/company/list" + queryString;
@@ -183,10 +185,17 @@ export default function CompanyList(){
 };
 
 function Company(props){
-    const company = props.company    
+    const company = props.company   
+    const navigate = useNavigate(); 
+
+    function moveToDetail(){
+    // App.jsx에 설정한 전체 경로를 정확하게 적어주어야 합니다.
+    // '/main' 레이아웃 하위에 있으므로 '/main'으로 시작합니다.
+    navigate(`/main/company/${company.compCd}`);
+    };
 
     return(
-        <tr>
+        <tr className="company-row" onClick={moveToDetail}>
             <td>{company.compName}</td>
             <td>                
                 {company.compType == 'C' 

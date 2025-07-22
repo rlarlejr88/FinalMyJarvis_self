@@ -1,0 +1,92 @@
+/* ================================
+📌 Setting.css (높이 조정 포함)
+=============================== */
+
+/* 페이지 전체 컨텐츠 영역 */
+/*  배경과 높이만 담당 */
+.setting-wrapper {
+  background-color: white;
+  border-radius: 12px;
+  border: 1px solid #e9eef5;
+  margin-top: -24px;
+  margin-bottom: -12px;
+  width: 100%;
+  height: calc(100% + 36px);
+  padding: 32px;
+  box-sizing: border-box;
+  /* 여기선 레이아웃 정렬 X */
+}
+
+/*  다크모드용 */
+.dark .setting-wrapper {
+  background-color:	#21243a;
+  color: #e0e0e0;
+  border-color: #2a2e47;
+}
+
+/* 내부 카드 레이아웃 (2단 구성) */
+.setting-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 gap-6;
+  width: 100%;
+}
+
+
+/* 카드 스타일 */
+.setting-card {
+  @apply bg-white rounded-2xl p-6 shadow-md flex flex-col gap-4;
+  overflow-y: auto;
+  max-height: 100%;
+}
+
+/* 다크모드 카드 스타일 조정 */
+.dark .setting-card {
+  background-color: #2a2e47;    /* 톤업된 다크 배경 */
+  color: #e0e0e0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* 항목 정렬 */
+.setting-item {
+  @apply flex items-center justify-between;
+}
+
+.setting-label {
+  @apply text-base font-medium text-gray-800;
+}
+
+.dark .setting-label {
+  color: #e0e0e0;
+}
+
+.setting-link {
+  @apply text-base text-gray-500 hover:text-gray-700 underline underline-offset-4;
+}
+
+.dark .setting-link {
+  color: #cbd5e1;
+}
+.dark .setting-link:hover {
+  color: #ffffff;
+}
+
+/* 배경 설정 블럭 */
+.setting-background {
+  @apply pt-4 mt-2 border-t border-gray-200;
+}
+
+.dark .setting-background {
+  border-color: #374151;
+}
+
+/* 공통 버튼 스타일 유지 */
+.setting-background .gradient-btn {
+  @apply px-5 py-2 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-[#1E1BFF] to-[#7C3AED] hover:brightness-110;
+}
+
+/* 보조 텍스트 */
+.setting-background p {
+  @apply text-xs text-gray-500;
+}
+.dark .setting-background p {
+  color: #b0b4c0;
+}

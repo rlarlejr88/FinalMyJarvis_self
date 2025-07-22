@@ -1,77 +1,125 @@
 import React, { useState, useEffect } from 'react';
-import './TagList.css';
 
-// TagList 컴포넌트: 태그를 기반으로 회의 목록을 필터링하고 표시하는 역할
 function TagList({ meetings, setMeetings, setTab, setScrollToId }) {
-  // 선택된 회의 상태 관리
   const [selectedMeeting, setLocalSelectedMeeting] = useState(null);
-  // 선택된 태그 상태 관리 (다중 선택 가능)
   const [selectedTags, setLocalSelectedTags] = useState([]);
 
-  // 전체 태그 목록 추출: 모든 회의 데이터에서 태그를 중복 없이 수집
   const allTags = Array.from(new Set(meetings.flatMap(m => m.tags || [])));
 
-  // 태그 클릭 핸들러: 태그를 선택하거나 선택 해제하고, 해당 태그로 회의 목록 필터링
   const handleTagClick = (tag) => {
-    // 선택된 회의 초기화
     setLocalSelectedMeeting(null);
-    // 선택된 태그 업데이트 (이미 선택된 태그는 제거, 그렇지 않으면 추가)
-    setLocalSelectedTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
-
-    // 선택된 태그를 기준으로 회의 목록 필터링
-    const filteredMeetings = meetings.filter(m => m.tags && m.tags.includes(tag));
-    setMeetings(filteredMeetings);
+    setLocalSelectedTags(prev =>
+      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+    );
   };
 
-  // 선택된 태그를 기준으로 회의 목록 필터링
   const filtered = selectedTags.length > 0
     ? meetings.filter(m => selectedTags.every(tag => (m.tags || []).includes(tag)))
     : meetings;
 
-  // 선택된 태그가 변경될 때마다 선택된 회의 초기화
   useEffect(() => {
     setLocalSelectedMeeting(null);
   }, [selectedTags]);
 
-  // 본문으로 이동 버튼 클릭 핸들러: 특정 회의로 이동하고 회의록 목록 탭으로 전환
   const handleGoToMainList = (meeting) => {
     if (setTab && setScrollToId) {
-      setTab('list'); // 탭을 회의록 목록으로 전환
-      setScrollToId(meeting.id); // 특정 회의로 스크롤 이동
+      setTab('list');
+      setScrollToId(meeting.id);
     }
   };
 
   return (
-    <div>
-      {/* 태그별 회의 목록 제목 */}
-      <h3>태그별 회의 목록</h3>
+    <section className="max-w-[720px] mx-auto py-8 px-4 space-y-6">
+      <h2 className="text-xl font-bold text-gray-800 dark:text-white">태그별 회의 목록</h2>
+
       {/* 태그 선택 바 */}
-      <div className="taglist-tagbar">
-        {allTags.length > 0 ? allTags.map(tag => (
-          <span
-            key={tag} // 태그 고유 키
-            className={`meeting-tag${selectedTags.includes(tag) ? ' selected' : ''}`} // 선택된 태그 스타일 적용
-            onClick={() => handleTagClick(tag)} // 태그 클릭 시 핸들러 호출
-          >
-            {tag}
-          </span>
-        )) : <span className="no-tags">등록된 태그 없음</span>}
+      <div className="flex flex-wrap gap-2">
+        {allTags.length > 0 ? (
+          allTags.map(tag => (
+            <span
+              key={tag}
+              onClick={() => handleTagClick(tag)}
+              className={`cursor-pointer text-sm px-3 py-1 rounded-full border font-medium transition-all duration-150
+                ${selectedTags.includes(tag)
+                  ? 'bg-gradient-to-r from-[#1E1BFF] to-[#7C3AED] text-white border-transparent shadow-md'
+                  : 'bg-gray-200 text-gray-800 border-gray-300 dark:bg-gray-600 dark:text-white dark:border-gray-500'}
+              `}
+            >
+              {tag}
+            </span>
+          ))
+        ) : (
+          <span className="text-gray-400">등록된 태그 없음</span>
+        )}
       </div>
-      {/* 필터링된 회의 목록 */}
-      <ul className="taglist-list">
-        {filtered.map(m => (
-          <li
-            key={m.id} // 회의 고유 키
-            className="taglist-item" // 회의 항목 스타일 클래스
-          >
-            <div>
-              {/* 회의 제목과 날짜 표시 */}
-              <b>{m.title}</b> <span className="meeting-date">{m.date}</span>
-            </div>
-          </li>
-        ))}
+
+      {/* 회의 목록 */}
+      <ul className="space-y-4">
+        {filtered.map(m => {
+          const isSelected = selectedMeeting?.id === m.id;
+          return (
+            <li
+              key={m.id}
+              className={`border rounded-lg p-4 transition-all duration-150 
+                dark:border-gray-600 dark:bg-[#1e2133] 
+                ${isSelected ? 'bg-gray-100 dark:bg-[#282c42]' : 'bg-white dark:bg-[#1e2133]'}
+              `}
+            >
+              <div className="flex justify-between items-start gap-4">
+                <div className="text-gray-800 dark:text-gray-100">
+                  <div className="font-semibold">{m.title}</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">({m.date})</div>
+                  <div className="text-sm mt-1 text-gray-700 dark:text-gray-300">
+                    참여자: {m.participants || '-'}
+                  </div>
+                </div>
+                <button
+                  className="text-sm font-medium text-indigo-600 hover:underline"
+                  onClick={() =>
+                    isSelected ? setLocalSelectedMeeting(null) : setLocalSelectedMeeting(m)
+                  }
+                >
+                  상세보기
+                </button>
+              </div>
+
+              {/* 상세 보기 */}
+              {isSelected && (
+                <div className="mt-4 bg-gray-50 dark:bg-[#2d3148] rounded-md p-4 shadow-sm text-sm text-gray-800 dark:text-gray-200 space-y-4">
+                  <div>
+                    <div className="font-semibold mb-1">회의 내용:</div>
+                    <div className="text-sm">{m.content}</div>
+                  </div>
+                  <div className="flex justify-end gap-2 pt-2">
+                    <button
+                      className="px-3 py-1 rounded bg-red-500 text-white hover:brightness-110"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setMeetings(meetings.filter(mm => mm.id !== m.id));
+                        setLocalSelectedMeeting(null);
+                      }}
+                    >
+                      삭제
+                    </button>
+                    <button
+                      className="px-3 py-1 rounded text-white font-semibold 
+                                 bg-gradient-to-r from-[#1E1BFF] to-[#7C3AED] shadow-md 
+                                 hover:brightness-110 transition-all duration-200"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleGoToMainList(m);
+                      }}
+                    >
+                      본문
+                    </button>
+                  </div>
+                </div>
+              )}
+            </li>
+          );
+        })}
       </ul>
-    </div>
+    </section>
   );
 }
 

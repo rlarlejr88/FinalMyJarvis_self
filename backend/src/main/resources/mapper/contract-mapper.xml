@@ -2,14 +2,24 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="kr.or.iei.contract.model.dao.ContractDao">	
 	
+	<sql id="searchFilterCondition">
+    <where>
+        <if test="memberNo != null and memberNo != ''">
+            AND C.MEMBER_NO = #{memberNo}
+        </if>
+    </where>
+	</sql>
+	
 	<!-- 전체 계약 수 조회 -->
-	<select id="selectContractCount" resultType="_int">
-	select count(*)
-	  from tbl_contract	    
+	<select id="selectContractCount" parameterType="map" resultType="_int">
+    SELECT count(*)
+    FROM TBL_CONTRACT C
+    JOIN TBL_MEMBER M ON C.MEMBER_NO = M.MEMBER_NO
+    <include refid="searchFilterCondition" />
 	</select>
 	
 	<!-- 전체 계약 목록 조회(논페이지) -->
-	<select id="selectAllContractList" resultType="Contract">
+	<select id="selectAllContractList" parameterType="map" resultType="Contract">
     SELECT
         C.CONTRACT_NO AS contractNo,
         C.STATUS_CODE AS statusCode,
@@ -31,12 +41,13 @@
         TBL_CONTRACT C
     LEFT JOIN
         TBL_MEMBER M ON C.MEMBER_NO = M.MEMBER_NO
+        <include refid="searchFilterCondition" />
     ORDER BY
         C.CONTRACT_START DESC
 	</select>	
 	
 	<!-- 전체 계약 목록 조회(페이지별) -->
-	<select id="selectContractList" parameterType="PageInfo" resultType="Contract">
+	<select id="selectContractList" parameterType="map" resultType="Contract">
     SELECT * 
       FROM (
       	   SELECT ROWNUM AS RNUM, A.* 
@@ -56,11 +67,12 @@
 			             LEFT JOIN TBL_MEMBER M ON C.MEMBER_NO = M.MEMBER_NO
 					     LEFT JOIN TBL_CONTRACT_PARTY CP ON C.CONTRACT_NO = CP.CONTRACT_NO
 					     LEFT JOIN TBL_COMPANY CO ON CP.COMP_CD = CO.COMP_CD
+					     <include refid="searchFilterCondition" />
 				   ORDER BY
 				         C.CONTRACT_START DESC				    	 
       	          ) A 
            )
-    	   where rnum between #{start} and #{end}     
+    	   WHERE rnum between #{pageInfo.start} and #{pageInfo.end}   
 	</select>
 	
 	<!-- 계약 상태 업데이트 -->
@@ -121,15 +133,203 @@
 	        CONTRACT_NO,
 	        COMP_CD,
 	        MEMBER_NO,
-	        ROLE
+	        ROLE,
+	        CONTACT_IDX
 	    ) VALUES (
 	        SEQ_CONTRACT_PARTY_ID.NEXTVAL,
 	        #{contractNo},
 	        #{compCd},
-	        #{memberNo},
-	        #{role}
+	        #{memberNo}, 
+	        #{role},
+	        #{contactIdx}
 	    )
 	</insert>
+	
+	<!-- 계약 상세 조회 -->
+	<resultMap id="contractDetailMap" type="kr.or.iei.contract.model.dto.ContractDetailDto">
+        <association property="companyInfo" javaType="kr.or.iei.company.model.dto.Company">
+            <result column="COMP_NAME" property="compName"/>
+            <result column="COMP_CD" property="compCd"/>
+            <result column="OWNER_NAME" property="ownerName"/>
+            <result column="COMP_NO" property="compNo"/>
+        </association>
+        <association property="contractInfo" javaType="kr.or.iei.contract.model.dto.ContractInfoDto">
+            <result column="CONTRACT_NO" property="contractNo"/>
+            <result column="CONTRACT_TITLE" property="contractTitle"/>
+            <result column="CONTRACT_CONTENT" property="contractContent"/>
+            <result column="CONTRACT_START" property="contractStart"/>
+            <result column="CONTRACT_END" property="contractEnd"/>
+            <result column="CONTRACT_DEPOSIT" property="contractDeposit"/>
+            <result column="STATUS_CODE" property="statusCode"/>
+        </association>
+        <collection property="parties" select="selectContractParties" column="CONTRACT_NO" javaType="java.util.ArrayList" ofType="kr.or.iei.contract.model.dto.PartyDto" />
+        <collection property="attachedFiles" select="selectContractFiles" column="CONTRACT_NO" javaType="java.util.ArrayList" ofType="kr.or.iei.common.model.dto.FileDTO" />
+        <collection property="changeHistory" select="selectContractHistory" column="CONTRACT_NO" javaType="java.util.ArrayList" ofType="kr.or.iei.contract.model.dto.HistoryDto" />
+        <collection property="memos" select="selectContractMemos" column="CONTRACT_NO" javaType="java.util.ArrayList" ofType="kr.or.iei.memo.model.dto.Memo" />
+    </resultMap>
+
+	<select id="selectOneContract" parameterType="string" resultMap="contractDetailMap">
+	    SELECT
+	        C.CONTRACT_NO,
+	        C.CONTRACT_TITLE,
+	        C.CONTRACT_CONTENT,
+	        TO_CHAR(C.CONTRACT_START, 'YYYY-MM-DD') AS CONTRACT_START,
+	        TO_CHAR(C.CONTRACT_END, 'YYYY-MM-DD') AS CONTRACT_END,
+	        C.CONTRACT_DEPOSIT,
+	        C.STATUS_CODE,
+	        CO.COMP_CD,
+	        CO.COMP_NAME,
+	        CO.OWNER_NAME,
+	        CO.COMP_NO
+	    FROM TBL_CONTRACT C
+	    -- 👇 [핵심 수정] 이제 '고객사' 역할을 가진 참여자를 기준으로 회사 정보를 가져옵니다.
+	    LEFT JOIN TBL_CONTRACT_PARTY CP ON C.CONTRACT_NO = CP.CONTRACT_NO AND CP.ROLE = '고객사'
+	    LEFT JOIN TBL_COMPANY CO ON CP.COMP_CD = CO.COMP_CD
+	    WHERE C.CONTRACT_NO = #{contractNo}
+	</select>
+
+    <select id="selectContractParties" parameterType="string" resultType="PartyDto">
+	    SELECT 
+	        -- '나'의 정보 또는 '고객사 담당자' 정보를 구분해서 가져옴
+	        NVL(M.MEMBER_NO, CM.CONTACT_IDX) AS partyId, -- 고유 식별자
+	        NVL(M.MEMBER_NAME, CM.CONTACT_NAME) AS name, -- 이름
+	        NVL(M.MEMBER_EMAIL, CM.CONTACT_EMAIL) as email, -- 이메일 (추가)
+	        CP.ROLE AS role,
+	        CP.SIGNED AS signed,
+	        TO_CHAR(CP.SIGNED_DATE, 'YYYY-MM-DD') as signedDate,
+	        CP.SIGNATURE_IMAGE as signatureImage
+	    FROM TBL_CONTRACT_PARTY CP
+	    LEFT JOIN TBL_MEMBER M ON CP.MEMBER_NO = M.MEMBER_NO
+	    LEFT JOIN TBL_COMPANY_MEMBER CM ON CP.CONTACT_IDX = CM.CONTACT_IDX
+	    WHERE CP.CONTRACT_NO = #{contractNo}
+	</select>
+	
+    <select id="selectContractFiles" parameterType="string" resultType="kr.or.iei.common.model.dto.FileDTO">
+        SELECT
+            FILE_NO as fileNo,
+            FILE_ORIGIN as fileOrigin,
+            FILE_PATH as filePath
+        FROM TBL_FILE
+        WHERE FILE_TABLE = 'contract' AND FILE_ID = #{contractNo} AND FILE_DELETED = 'N'
+    </select>
     
+	<select id="selectContractHistory" resultType="kr.or.iei.contract.model.dto.HistoryDto">
+    SELECT        
+        H.CONTRACT_HISTORY_NO AS historyNo,
+        H.CONTRACT_HISTORY_CONTENT AS changedItem,
+        TO_CHAR(H.CONTRACT_HISTORY_DATE, 'YYYY-MM-DD HH24:MI') AS changeDate,
+        M.MEMBER_NAME AS changer
+    FROM TBL_CONTRACT_HISTORY H
+    JOIN TBL_MEMBER M ON H.MEMBER_NO = M.MEMBER_NO
+    WHERE H.CONTRACT_NO = #{contractNo}
+    ORDER BY H.CONTRACT_HISTORY_DATE DESC
+	</select>
+    
+    <select id="selectContractMemos" parameterType="string" resultType="kr.or.iei.memo.model.dto.Memo">
+        SELECT
+            MEMO_NO AS memoNo,
+            MEMO_CONTENT AS memoContent,
+            M.MEMBER_NAME AS writerName,
+            TO_CHAR(REG_DATE, 'YYYY-MM-DD') AS writeDate
+        FROM TBL_MEMO TM
+        JOIN TBL_MEMBER M ON TM.MEMBER_NO = M.MEMBER_NO
+        WHERE MEMO_TABLE = 'CONTRACT' AND MEMO_ID = #{contractNo}
+        ORDER BY REG_DATE DESC
+    </select>
+    
+    <update id="updateSignature" parameterType="SignatureUpdateDto">
+	    UPDATE TBL_CONTRACT_PARTY
+	    SET
+	        SIGNED = 'Y',
+	        SIGNED_DATE = SYSDATE,
+	        SIGNATURE_IMAGE = #{signatureImage}
+	    WHERE 
+	        CONTRACT_NO = #{contractNo} 
+	        AND (MEMBER_NO = #{partyId} OR CONTACT_IDX = #{partyId}) -- ◀ [수정] partyId로 '나'와 '고객사' 모두를 찾을 수 있도록 변경
+	</update>
+	
+	<!-- 고유 서명 토큰으로 계약 상세 정보 조회 -->
+	<select id="selectContractByToken" parameterType="string" resultMap="contractDetailMap">
+    SELECT
+        C.CONTRACT_NO,
+        C.CONTRACT_TITLE,
+        C.CONTRACT_CONTENT,
+        TO_CHAR(C.CONTRACT_START, 'YYYY-MM-DD') AS CONTRACT_START,
+        TO_CHAR(C.CONTRACT_END, 'YYYY-MM-DD') AS CONTRACT_END,
+        C.CONTRACT_DEPOSIT,
+        C.STATUS_CODE,
+        CO.COMP_CD,
+        CO.COMP_NAME,
+        CO.OWNER_NAME,
+        CO.COMP_NO
+    FROM TBL_CONTRACT_PARTY CP_TOKEN
+    JOIN TBL_CONTRACT C ON CP_TOKEN.CONTRACT_NO = C.CONTRACT_NO
+    LEFT JOIN TBL_CONTRACT_PARTY CP ON C.CONTRACT_NO = CP.CONTRACT_NO AND CP.ROLE = '당사자'
+    LEFT JOIN TBL_COMPANY CO ON CP.COMP_CD = CO.COMP_CD
+    WHERE CP_TOKEN.SIGN_TOKEN = #{signToken} AND ROWNUM = 1
+	</select>
+	
+	<!-- 공개 서명 저장 API -->
+	<update id="updateSignatureByToken" parameterType="kr.or.iei.contract.model.dto.SignatureUpdateDto">
+    UPDATE TBL_CONTRACT_PARTY
+    SET
+        SIGNED = 'Y',
+        SIGNED_DATE = SYSDATE,
+        SIGNATURE_IMAGE = #{signatureImage}
+    WHERE SIGN_TOKEN = #{signToken}
+	</update>
+	
+	<!-- 공개 서명 저장 API -->
+	<update id="updateSignToken">
+    UPDATE TBL_CONTRACT_PARTY
+    SET
+        SIGN_TOKEN = #{signToken}
+    WHERE 
+        CONTRACT_NO = #{contractNo}         
+        AND (MEMBER_NO = #{memberNo} OR CONTACT_IDX = #{memberNo})
+	</update>
+	
+	<select id="getContractNoBySignToken" parameterType="string" resultType="string">
+    SELECT CONTRACT_NO
+    FROM TBL_CONTRACT_PARTY
+    WHERE SIGN_TOKEN = #{signToken}
+	</select>
+
+	<select id="getMemberNoBySignToken" parameterType="string" resultType="string">
+    SELECT MEMBER_NO
+    FROM TBL_CONTRACT_PARTY
+    WHERE SIGN_TOKEN = #{signToken}
+	</select>
+	
+	<select id="getMemberNoByContractNo" parameterType="string" resultType="string">
+    SELECT
+        MEMBER_NO
+    FROM TBL_CONTRACT
+    WHERE CONTRACT_NO = #{contractNo}
+	</select>
+	
+	
+	<!-- 고객사 상세 페이지 > 계약 목록 조회 -->
+	<select id="selectContractListByCompany" parameterType="string" resultType="kr.or.iei.contract.model.dto.Contract">
+    SELECT
+        C.CONTRACT_NO           AS contractNo,
+        CP.COMP_CD              AS compCd,
+        CO.COMP_NAME            AS companyName,      -- compName -> companyName 으로 수정
+        C.CONTRACT_TITLE        AS contractTitle,    -- contractName -> contractTitle 으로 수정
+        C.STATUS_CODE           AS statusCode,       -- contractStatus -> statusCode 으로 수정
+        C.CONTRACT_DEPOSIT      AS contractDeposit,  -- contractAmount -> contractDeposit 으로 수정
+        TO_CHAR(C.CONTRACT_START, 'YYYY-MM-DD') AS contractStart,  -- contractStartDate -> contractStart 으로 수정
+        TO_CHAR(C.CONTRACT_END, 'YYYY-MM-DD')   AS contractEnd      -- contractEndDate -> contractEnd 으로 수정
+    FROM
+        TBL_CONTRACT C
+    JOIN
+        TBL_CONTRACT_PARTY CP ON C.CONTRACT_NO = CP.CONTRACT_NO
+    JOIN
+        TBL_COMPANY CO ON CP.COMP_CD = CO.COMP_CD
+    WHERE
+        CP.COMP_CD = #{compCd}
+    ORDER BY
+        C.CONTRACT_START DESC
+	</select>
   
 </mapper>
